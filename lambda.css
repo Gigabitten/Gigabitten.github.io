@@ -4,12 +4,29 @@
     font-size: 14px;
 }
 
-textarea, input {
+textarea, input, #back {
     color: #00ffff;
+}
+
+textarea, input {
     background-color: black;
     width: 100%;
 }
 
 #info {
     color: #00ffff
+}
+
+h1 {
+    color: #4d0066
+}
+
+#bottom {
+    clear: both;
+    position: relative;
+    margin-top: -200px;
+}
+
+figcaption {
+    color: #339933
 }

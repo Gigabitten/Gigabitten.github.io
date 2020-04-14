@@ -1,0 +1,15 @@
+body {
+    background-color: #009933
+}
+
+canvas {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+/* I couldn't get flexboxes to work so I did this thing I found online. It's weird, but it works. 
+ * If you can't tell by looking (I know I can't), it centers both vertically and horizontally.
+ */

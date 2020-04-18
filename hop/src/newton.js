@@ -58,7 +58,7 @@ let groundedFriction = function(obj) {
 
 let projectileMotion = function(obj) {
     if(obj.yVel <= tV) obj.yVel += fG;
-} 
+}
 
 let basicMove = [
     applyVel,
@@ -82,5 +82,5 @@ let doPhysics = function() {
     });
 }
 
-export default { bodies, doPhysics, mover, basicMove, noGrav,
+export default { bodies, doPhysics, mover, basicMove, noGrav, tV, applyVel,
 	       };

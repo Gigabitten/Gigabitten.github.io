@@ -128,6 +128,8 @@ function doingControls(){
 
     switch(p.state) {
     case 0:
+	if(p.leftInput && p.actualFacing !== 4) p.facing = 4;
+	if(p.rightInput && p.actualFacing !== 2) p.facing = 2;
 	if(Math.abs(p.xVel) < jumpSpeed / 2) {
 	    if(p.leftInput) {
 		p.xVel -= speed / 8;
@@ -139,6 +141,8 @@ function doingControls(){
 	break;
 
     case 3:
+	if(p.leftInput && p.actualFacing !== 4) p.facing = 4;
+	if(p.rightInput && p.actualFacing !== 2) p.facing = 2;
 	if(p.leftInput) {
 	    p.xVel = -speed + inheritedXVel;
 	}

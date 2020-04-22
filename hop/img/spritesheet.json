@@ -1,0 +1,73 @@
+{
+	"meta": {
+		"image": "spritesheet.png",
+		"size": {"w":80,"h":64},
+		"scale": "1"
+	},
+	"frames": {
+		"lilypad.bmp":
+		{
+			"frame": {"x":2,"y":2,"w":64,"h":32},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":64,"h":32},
+			"sourceSize": {"w":64,"h":32}
+		},
+		"frog.bmp":
+		{
+			"frame": {"x":2,"y":38,"w":32,"h":24},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":24},
+			"sourceSize": {"w":32,"h":24}
+		},
+		"swampSubsurface.bmp":
+		{
+			"frame": {"x":38,"y":38,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		},
+		"swampSurface.bmp":
+		{
+			"frame": {"x":50,"y":38,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		},
+		"swampWall.bmp":
+		{
+			"frame": {"x":38,"y":50,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		},
+		"swampWallCorner.bmp":
+		{
+			"frame": {"x":50,"y":50,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		},
+		"wallDirt.bmp":
+		{
+			"frame": {"x":70,"y":2,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		},
+		"wallTransition.bmp":
+		{
+			"frame": {"x":70,"y":14,"w":8,"h":8},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
+			"sourceSize": {"w":8,"h":8}
+		}
+	}
+}

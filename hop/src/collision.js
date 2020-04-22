@@ -43,31 +43,31 @@ let collide = function(r1, r2) {
 	    case 1:
 		r1.landed = true;
 		break;
-	    case 4:
-		r1.hitRightWall = true;
-		break;
 	    case 2:
 		r1.hitLeftWall = true;
 		break;
 	    case 3:
 		r1.hitCeiling = true;
 		break;
+	    case 4:
+		r1.hitRightWall = true;
+		break;
 	    }
 	}
 	if(r2.name === 1) {
 	    switch(first) {
 	    case 1:
+		r2.landed = true;
+		break;
+	    case 2:
+		r2.hitLeftWall = true;
+		break;
+	    case 3:
 		r2.hitCeiling = true;
 		break;
 	    case 4:
-		r2.hitLeftWall = true;
-		break;
-	    case 2:
 		r2.hitRightWall = true;
 		break;
-	    case 3:
-		r2.landed = true;
-		break;		
 	    }
 	}
     }		
@@ -140,6 +140,27 @@ let pushOutHandler = function(r1, r2) {
     return side;
 }
 
+let pAndR = function(r1, r2) {
+    let p = r1.name === 1 ? r1 : r2
+    let r = r1.name !== 1 ? r1 : r2
+    return [p,r];
+}
+
+let killHandler = function(r1, r2) {
+    let [p,r] = pAndR(r1, r2);
+    if(p.name === 1 && isRectInRect(p, r)) {
+	p.respawn();
+    }
+}
+
+let checkpointHandler = function(r1, r2) {
+    let [p,r] = pAndR(r1, r2);
+    if(p.name === 1 && isRectInRect(p, r)) {
+	p.xSpawn = p.x;
+	p.ySpawn = p.y;
+    }
+}
+
 let colorHandler = function(r1, r2) {
     if(r2.name === 3) {
 	if(isRectInRect(r1, r2)) {
@@ -167,5 +188,4 @@ let doCollisions = function() {
 }
 
 export default { colliders, doCollisions, pushOutHandler, colorHandler, wallHandler, isInRange,
-		 rangesOverlap, };
-// Nothing here yet. Soon! And it will be a lot, I think.
+		 rangesOverlap, isRectInRect, killHandler, checkpointHandler, };

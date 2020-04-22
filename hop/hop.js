@@ -29,7 +29,7 @@ let gameLoop = function() {
     if(frameCount * timeStep < t - t0) {
 	if(frameCount % 60 === 0) {
 	    possibleTimingError(t);
-	    SC.updateView();
+	    //SC.updateView();
 	}
 	/* the order of these steps can be important
 	 * physics has to happen between collisions and doingControls

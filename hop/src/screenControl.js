@@ -16,8 +16,8 @@ let scroll = function() {
 
 let updateView = function() {
     // adding 1 is necessary or it will have bits at the edges    
-    let width = document.documentElement.clientWidth + 1;
-    let height = document.documentElement.clientHeight + 1;
+    let width = document.documentElement.clientWidth;
+    let height = document.documentElement.clientHeight;
     R.app.renderer.resize(width, height);
     R.viewport.width = width / R.app.stage.scale.x;
     R.viewport.height = height / R.app.stage.scale.y;

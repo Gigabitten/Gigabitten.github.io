@@ -7,6 +7,8 @@ import SC from "./src/screenControl.js";
 import Con from "./src/controls.js";
 import M from "./src/maps.js";
 
+let trackFrameTime = false;
+
 const gameSpeed = 60;
 const timeStep = 1000 / gameSpeed; // 16.666...
 let t0 = performance.now();
@@ -24,23 +26,45 @@ function possibleTimingError(t) {
     }
 }
 
+let last = 0;
+function getDiff(s) {
+    if(frameCount > 10 && frameCount < 20 && trackFrameTime) {
+	console.log(s);
+	let tn = performance.now();
+	console.log(tn - last);
+	last = tn;
+    }
+}
+
 let gameLoop = function() {
     let t = performance.now();
     if(frameCount * timeStep < t - t0) {
 	if(frameCount % 60 === 0) {
 	    possibleTimingError(t);
-	    //SC.updateView();
+	    //	    SC.updateView();
+	    // doesn't work with all browsers
 	}
 	/* the order of these steps can be important
 	 * physics has to happen between collisions and doingControls
 	 * otherwise doingControls resets temp physics handlers
 	 */
+	getDiff("Time to go from bottom to top:");
 	frameCount++;
+	
 	N.doPhysics();
+	getDiff("Time to do physics:");
+	
 	C.doCollisions();
+	getDiff("Time to do collision:");
+	
 	Con.doingControls();
+	getDiff("Time to do controls:");
+	
 	SC.scroll();
+	getDiff("Time to scroll:");
+	
 	R.redraw();
+	getDiff("Time to redraw:");
     }
     window.requestAnimationFrame(gameLoop);
 }

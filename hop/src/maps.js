@@ -4,7 +4,7 @@ import F from "./frog.js";
 import C from "./collision.js";
 import R from "./render.js";
 
-// Loading order actually determines rendering order. Load the things you want on top last. 
+// Loading order actually determines rendering order. Load the things you want on top last.
 
 let map1 = function() {
     R.viewport.minX = -30;
@@ -12,13 +12,48 @@ let map1 = function() {
     R.viewport.maxX = 1030;
     R.viewport.maxY = 1030;
 
-    S.checkpoint(500, 1900, 100, 100, '#00ff00');
-    S.checkpoint(1500, 1900, 100, 100, '#00ff00');
-    
+    S.killRect(900, 900, 50, 50);
+
     S.floor(-2000, 1000, 4998, 2000);
-    S.ceiling(-2000, -2000, 5000, 2000, '#333333');
+    S.ceiling(-2000, -2000, 5000, 2000);
     S.wall(-2000, 0, 2000, 1006, 4);
     S.wall(1000, 0, 2000, 1006, 2);
+
+    S.checkpoint(468, 972);
+
+    let m = new Object();
+    let TLi = 0;
+    let BRi = 1000;
+    let s = 100;
+    let gap = 40;
+    let TL = TLi + gap;
+    let BR = BRi - gap;
+    let V = 10;
+    S.dev(200, 200, s, s, m);
+    m.physicsBehaviors = [function(obj) {
+	if(obj.bottom() > BR) {
+	    obj.y = BR - obj.height;
+	    obj.yVel = 0;
+	    obj.xVel = V;
+	}
+   	if(obj.right() > BR) {
+	    obj.x = BR - obj.width;
+	    obj.xVel = 0;
+	    obj.yVel = -V;
+	}
+	if(obj.top() < TL) {
+	    obj.y = TL;
+	    obj.yVel = 0;
+	    obj.xVel = -V;
+	}
+	if(obj.left() < TL) {
+	    obj.x = TL;
+	    obj.xVel = 0;
+	    obj.yVel = V;
+	}
+    }, N.applyVel];
+    N.bodies.push(m);
+    m.xVel = -V;
 
     F.makeFrog(F.player);
     F.player.xSpawn = 500;
@@ -28,33 +63,5 @@ let map1 = function() {
 
 export default { map1, };
 
-/* keeping this because I'll probably need it again
-    let m = new Object();
-    S.killRect(200, 200, 150, 150, '#00ffcc', m);
-    let TL = 50;
-    let BR = 1800
-    m.physicsBehaviors = [function(obj) {
-	if(obj.y > BR) {
-	    obj.y = BR;
-	    obj.yVel = 0;
-	    obj.xVel = 20;
-	}
-	if(obj.x > BR) {
-	    obj.x = BR;
-	    obj.xVel = 0;
-	    obj.yVel = -20;
-	}
-	if(obj.y < TL) {
-	    obj.y = TL;
-	    obj.yVel = 0;
-	    obj.xVel = -20;
-	}
-	if(obj.x < TL) {
-	    obj.x = TL;
-	    obj.xVel = 0;
-	    obj.yVel = 20;
-	}
-    }, N.applyVel];
-    N.bodies.push(m);
-    m.xVel = -20;
-*/
+
+

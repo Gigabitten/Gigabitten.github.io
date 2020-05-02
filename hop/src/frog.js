@@ -28,12 +28,20 @@ let frogify = function(obj) {
 	this.xVel = 0;
 	this.yVel = 0;
     }
+
+    obj.renderOffsetX = 0;
+    obj.renderOffsetY = 0;
+
+    obj.snaps = [];
+    obj.facing = 2;
+    obj.desiredFacing = 2;
+    obj.desiredRelFacing = 2;
 }
 
 let player = new Object();
 
 let makeFrog = function(obj) {
-    S.rect(0, 0, 32, 24, '#003300', obj);
+    S.rect(0, 0, 32, 24, obj);
     frogify(obj);
     R.pushOntoLayer(obj, 20);
     // the obj doesn't push - they get pushed only
@@ -43,7 +51,7 @@ let makeFrog = function(obj) {
     obj.draw = R.playerDraw;
     obj.sprites[0] = R.genSprite("frog.bmp");
     obj.sprites.map((s) => s.anchor.set(0.5, 0.5));
-    R.addChildren(obj);
+    S.anchorAndAdd(obj);
 }
 
 export default { player, makeFrog, };

@@ -115,23 +115,42 @@ let pushOutHandler = function(r1, r2) {
 	    
 	    switch(snapDirection) {
 	    case left:
-		r2.x = r1.x - r2.width;
+		r2.leftHit = r1;
+		let leftSnap = function(obj) {
+		    obj.x = obj.leftHit.x - obj.width;
+		}
+		r2.snaps.push(leftSnap);
+		r2.snaps.map(x => x(r2));
 		side = 4;
 		break;
 
 	    case right:
-		r2.x = r1.x + r1.width;
+		r2.rightHit = r1;
+		let rightSnap = function(obj) {
+		    obj.x = obj.rightHit.x + obj.rightHit.width;
+		}
+		r2.snaps.push(rightSnap);
+		r2.snaps.map(x => x(r2));
 		side = 2;
 		break;
 		
 	    case top:
-		r2.y = r1.y - r2.height;
+		r2.topHit = r1;
+		let topSnap = function(obj) {
+		    obj.y = obj.topHit.y - obj.height;
+		}
+		r2.snaps.push(topSnap);
+		r2.snaps.map(x => x(r2));
 		side = 1;
 		break;
 
 	    case bottom:
-		// r2 hits the bottom of r1, the only case where x-velocity isn't imparted
-		r2.y = r1.y + r1.height;
+		r2.bottomHit = r1;
+		let bottomSnap = function(obj) {
+		    obj.y = obj.bottomHit.y + obj.bottomHit.height;
+		}
+		r2.snaps.push(bottomSnap);
+		r2.snaps.map(x => x(r2));
 		side = 3;
 		break;
 	    }

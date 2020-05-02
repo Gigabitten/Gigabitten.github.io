@@ -22,7 +22,6 @@ let loader = PIXI.loader;
 let resources = PIXI.loader.resources;
 let Sprite = PIXI.Sprite;
 let stage = app.stage;
-let Graphics = PIXI.Graphics;
 
 const zoom = 2;
 stage.scale.x = zoom;
@@ -32,15 +31,6 @@ let visibles = [];
 
 let xOffsetDelta = { xO: 0 };
 let yOffsetDelta = { yO: 0 };
-
-let rect = function(w, h) {
-    let rectangle = new Graphics();
-    rectangle.beginFill(0x333333);
-    rectangle.drawRect(0, 0, w, h);
-    rectangle.endFill();
-    app.stage.addChild(rectangle);
-    return rectangle;
-}
 
 let viewport = {
     x: 0,
@@ -78,8 +68,8 @@ let flipSprites = function(r, d) {
     }
 }
 
-let addChildren = function(obj) {
-    obj.sprites.map((s) => app.stage.addChild(s));
+let singleDraw = function(obj) {
+    obj.sprites[0].position.set(obj.x, obj.y);
 }
 
 // I could have surely done something clever to combine the left and right walls into one but meh
@@ -138,16 +128,9 @@ let pushOntoLayer = function(obj, layerNum) {
 }
 
 let playerDraw = function(obj) {
-    if(obj.facingActual === undefined) obj.facingActual = 2;
-    if(obj.facingActual === 2 && obj.facing === 4) {
-	obj.facingActual = 4;
-	flipSprites(obj, 'horizontal');
-    }
-    if(obj.facingActual === 4 && obj.facing === 2) {
-	obj.facingActual = 2;
-	flipSprites(obj, 'horizontal');
-    }
-    obj.sprites[0].position.set(obj.x, obj.y);
+    if(obj.desiredFacing !== obj.facing) flipSprites(obj, 'horizontal');
+    obj.facing = obj.desiredFacing;
+    obj.sprites[0].position.set(obj.x + obj.renderOffsetX, obj.y + obj.renderOffsetY);
 }
 
 let redraw = function() {
@@ -166,6 +149,6 @@ let redraw = function() {
     // visibles is a list of lists, in order to allow for control over rendering layers
 }
 
-export default { viewport, redraw, visibles, pushOntoLayer, floorDraw, app, flipSprites, 
-		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, addChildren, ceilingDraw, 
-		 rightWallDraw, leftWallDraw, rect, genSprite, };
+export default { viewport, redraw, visibles, pushOntoLayer, floorDraw, app, flipSprites, singleDraw,
+		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, 
+		 rightWallDraw, leftWallDraw, singleDraw, genSprite, };

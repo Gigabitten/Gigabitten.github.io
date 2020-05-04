@@ -1,6 +1,7 @@
 import R from "./render.js";
 import N from "./newton.js";
 import C from "./collision.js";
+import U from "./utils.js";
 
 let Graphics = PIXI.Graphics;
 
@@ -30,7 +31,7 @@ let dev = function(x, y, w, h, r) {
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.name = 6;
-    r.sprites[0] = R.genTile("dev.bmp", w, h);
+    r.sprites[0] = R.genTile("img/Dev.png", w, h);
     r.draw = R.singleDraw;
     anchorAndAdd(r);
     return r;
@@ -62,7 +63,7 @@ let ceiling = function(x, y, w, h, r) {
     r.draw = R.ceilingDraw;
     r.type = 9;
 
-    r.sprites[0] = R.genTile("swampSubsurface.bmp", w, h);
+    r.sprites[0] = R.genTile("img/Peat-Bare.png", w, h);
     anchorAndAdd(r);
 }
 // walls need an orientation - 2 for right internal walls, 4 for left
@@ -78,13 +79,12 @@ let wall = function(x, y, w, h, o, r) {
 	r.name = 8;
     }
     else throw "Hey! Walls need an orientation.";
-    r.sprites[0] = R.genSprite("swampWallCorner.bmp");
-    r.sprites[1] = R.genSprite("swampWallCorner.bmp");
-    r.sprites[1].scale.y *= -1;
-    r.sprites[2] = R.genTile("swampWall.bmp", 8, h - 16);
-    r.sprites[3] = R.genTile("wallDirt.bmp", w - 8, h - 16);
-    r.sprites[4] = R.genTile("wallTransition.bmp", w - 8, 8);
-    r.sprites[5] = R.genTile("wallTransition.bmp", w - 8, 8);
+    r.sprites[0] = R.genSprite("img/Peat-Bare-Transition-Tree.png");
+    r.sprites[1] = R.genSprite("img/Peat-Bare-Transition-Tree-Top.png");
+    r.sprites[2] = R.genTile("img/Peat-Dead-Tree.png", 32, h - 64);
+    r.sprites[3] = R.genTile("img/Peat-Dead.png", w - 32, h - 64);
+    r.sprites[4] = R.genTile("img/Peat-Bare-Transition.png", w - 32, 32);
+    r.sprites[5] = R.genTile("img/Peat-Bare-Transition.png", w - 32, 32);
     r.sprites[5].scale.y *= -1;
     if(o === 4) R.flipSprites(r, 'horizontal');
     anchorAndAdd(r);
@@ -94,8 +94,8 @@ let floor = function(x, y, w, h, r) {
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.name = 6;
-    r.sprites[0] = R.genTile("swampSurface.bmp", w, 8);
-    r.sprites[1] = R.genTile("swampSubsurface.bmp", w, h - 8);
+    r.sprites[0] = R.genTile("img/Peat.png", w, 32);
+    r.sprites[1] = R.genTile("img/Peat-Bare.png", w, h - 32);
     r.draw = R.floorDraw;
     anchorAndAdd(r);
 }
@@ -107,16 +107,43 @@ let killRect = function(x, y, w, h, r) {
     r.name = 4;
 }
 
-let checkpoint = function(x, y, r) {
+let checkpoint = function(x, y, f) {
     let w = 64;
     let h = 32;
-    if(r === undefined) r = new Object();
-    collidableRect(x, y, h, h, r);
+    let r = new Object();
+    collidableRect(x, y, w, h, r);
     r.name = 9;
-    r.sprites[0] = R.genSprite("lilypad.bmp", w, h);
+    r.sprites[0] = R.genSprite("img/Lilypad.png", w, h);
     r.draw = R.singleDraw;
     r.collisionHandler = C.checkpointHandler;
     r.name = 4;
+    r.check = f;
+    anchorAndAdd(r);
+}
+
+let firefly = function(x, y, fx, fy) {
+    let w = 8;
+    let h = 8;
+    let r = new Object();
+    collidableRect(x, y, w, h, r);
+    r.name = 10;
+    r.sprites[0] = R.genSprite("img/Firefly.png", w, h);
+    r.draw = R.singleDraw;
+    r.collisionHandler = C.checkpointHandler;
+    r.baseX = x;
+    r.baseY = y;
+    r.counter = 0;
+    N.bodies.push(r);
+    r.physicsBehaviors = [function(obj) {
+	obj.counter++;
+	obj.x = fx === undefined ? ((obj) => obj.baseX) : fx(obj);
+	obj.y = fy === undefined ? ((obj) => obj.baseY) : fy(obj);
+    }];
+    r.collisionHandler = C.fireflyHandler;
+    r.destroy = function() {
+	r.sprites[0].destroy();
+	U.deleteObject(r);
+    }
     anchorAndAdd(r);
 }
 
@@ -128,4 +155,4 @@ let buildRoomBorder = function(w, h, t, c) {
 }
 
 export default { rect, buildRoomBorder, killRect, checkpoint, floor, wall, ceiling, anchorAndAdd,
-		 dev, };
+		 dev, firefly, };

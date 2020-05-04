@@ -1,81 +1,215 @@
 {
-	"meta": {
-		"image": "spritesheet.png",
-		"size": {"w":104,"h":64},
-		"scale": "1"
-	},
 	"frames": {
-		"lilypad.bmp":
-		{
-			"frame": {"x":2,"y":2,"w":64,"h":32},
+		"Dev.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":64,"h":32},
-			"sourceSize": {"w":64,"h":32}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"dev.bmp":
-		{
-			"frame": {"x":70,"y":2,"w":32,"h":32},
+		"Frog.png": {
+			"frame": {
+				"x": 35,
+				"y": 1,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
-			"sourceSize": {"w":32,"h":32}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"frog.bmp":
-		{
-			"frame": {"x":2,"y":38,"w":32,"h":24},
+		"Lilypad.png": {
+			"frame": {
+				"x": 1,
+				"y": 35,
+				"w": 64,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":32,"h":24},
-			"sourceSize": {"w":32,"h":24}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 64,
+				"h": 32
+			}
 		},
-		"swampSubsurface.bmp":
-		{
-			"frame": {"x":38,"y":38,"w":8,"h":8},
+		"Peat.png": {
+			"frame": {
+				"x": 69,
+				"y": 1,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"swampSurface.bmp":
-		{
-			"frame": {"x":50,"y":38,"w":8,"h":8},
+		"Peat-Bare.png": {
+			"frame": {
+				"x": 67,
+				"y": 35,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"swampWall.bmp":
-		{
-			"frame": {"x":62,"y":38,"w":8,"h":8},
+		"Peat-Bare-Transition.png": {
+			"frame": {
+				"x": 1,
+				"y": 69,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"swampWallCorner.bmp":
-		{
-			"frame": {"x":74,"y":38,"w":8,"h":8},
+		"Peat-Bare-Transition-Tree.png": {
+			"frame": {
+				"x": 35,
+				"y": 69,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"wallDirt.bmp":
-		{
-			"frame": {"x":86,"y":38,"w":8,"h":8},
+		"Peat-Bare-Transition-Tree-Top.png": {
+			"frame": {
+				"x": 69,
+				"y": 69,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		},
-		"wallTransition.bmp":
-		{
-			"frame": {"x":38,"y":50,"w":8,"h":8},
+		"Peat-Dead.png": {
+			"frame": {
+				"x": 103,
+				"y": 1,
+				"w": 32,
+				"h": 32
+			},
 			"rotated": false,
 			"trimmed": false,
-			"spriteSourceSize": {"x":0,"y":0,"w":8,"h":8},
-			"sourceSize": {"w":8,"h":8}
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
+		},
+		"Peat-Dead-Tree.png": {
+			"frame": {
+				"x": 101,
+				"y": 35,
+				"w": 32,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 32
+			}
 		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 136,
+			"h": 102
+		},
+		"scale": "1"
 	}
 }

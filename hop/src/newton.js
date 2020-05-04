@@ -82,5 +82,11 @@ let doPhysics = function() {
     });
 }
 
-export default { bodies, doPhysics, mover, basicMove, noGrav, tV, applyVel,
+let clear = function() {
+    // for some reason this is equivalent to clearing the array and is even implementation-independent
+    // so I'll use it since bodies = [] changes the reference
+    bodies.length = 0;
+}
+
+export default { bodies, doPhysics, mover, basicMove, noGrav, tV, applyVel, clear, 
 	       };

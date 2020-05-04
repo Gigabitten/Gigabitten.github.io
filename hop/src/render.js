@@ -6,14 +6,18 @@
  * so all I have to do is update sprite positions relative to the object.
  */
 let app = new PIXI.Application({width: document.documentElement.clientWidth + 1,
-				height: document.documentElement.clientHeight + 1,
-				backgroundColor: 0x009933,
-			  });
+			    height: document.documentElement.clientHeight + 1,
+			    backgroundColor: 0x009933,
+			   });
 document.body.appendChild(app.view);
+let stage = app.stage;
+const zoom = 2;
+stage.scale.x = zoom;
+stage.scale.y = zoom;
 
 // pixi aliases
-let tm = function() {
-    return PIXI.loader.resources["img/spritesheet.json"].textures;
+let tm = function(s) {
+    return PIXI.loader.resources[s].texture;
 }
 // can't evaluate right away since obviously img/spritesheet.json hasn't loaded yet.
 // a function is a great method of delaying execution to the call for something
@@ -21,11 +25,6 @@ let Application = PIXI.Application;
 let loader = PIXI.loader;
 let resources = PIXI.loader.resources;
 let Sprite = PIXI.Sprite;
-let stage = app.stage;
-
-const zoom = 2;
-stage.scale.x = zoom;
-stage.scale.y = zoom;
 
 let visibles = [];
 
@@ -35,8 +34,8 @@ let yOffsetDelta = { yO: 0 };
 let viewport = {
     x: 0,
     y: 0,
-    width: document.documentElement.clientWidth / 2,
-    height: document.documentElement.clientHeight / 2,
+    width: (document.documentElement.clientWidth / 2) * (3 / 4),
+    height: (document.documentElement.clientHeight / 2) * (3 / 4),
     top: function() {
 	return this.y;
     },
@@ -52,11 +51,11 @@ let viewport = {
 }
 
 let genSprite = function(s) {
-    return new Sprite(tm()[s]);
+    return new Sprite(tm(s));
 }
 
 let genTile = function(s, w, h) {
-    return new PIXI.TilingSprite(tm()[s], w, h);
+    return new PIXI.TilingSprite(tm(s), w, h);
 }
 
 let flipSprites = function(r, d) {
@@ -76,32 +75,32 @@ let singleDraw = function(obj) {
 let rightWallDraw = function(obj) {
     let h = obj.y + obj.height;
     // bottom corner
-    obj.sprites[0].position.set(obj.x, h - 8);
+    obj.sprites[0].position.set(obj.x, h - 32);
     // top corner
     obj.sprites[1].position.set(obj.x, obj.y);
     // inner surface
-    obj.sprites[2].position.set(obj.x, obj.y + 8);
+    obj.sprites[2].position.set(obj.x, obj.y + 32);
     // the dryer dirt in the middle    
-    obj.sprites[3].position.set(obj.x + 8, obj.y + 8);
+    obj.sprites[3].position.set(obj.x + 32, obj.y + 32);
     // bottom transition blocks
-    obj.sprites[4].position.set(obj.x + 8, h - 8);
+    obj.sprites[4].position.set(obj.x + 32, h - 32);
     // top transition blocks
-    obj.sprites[5].position.set(obj.x + 8, obj.y);
+    obj.sprites[5].position.set(obj.x + 32, obj.y);
 }
 
 let leftWallDraw = function(obj) {
     let w = obj.x + obj.width;
     let h = obj.y + obj.height;
     // bottom corner
-    obj.sprites[0].position.set(w - 8, h - 8);
+    obj.sprites[0].position.set(w - 32, h - 32);
     // top corner
-    obj.sprites[1].position.set(w - 8, obj.y);
+    obj.sprites[1].position.set(w - 32, obj.y);
     // inner surface
-    obj.sprites[2].position.set(w - 8, obj.y + 8);
+    obj.sprites[2].position.set(w - 32, obj.y + 32);
     // the dryer dirt in the middle    
-    obj.sprites[3].position.set(obj.x, obj.y + 8);
+    obj.sprites[3].position.set(obj.x, obj.y + 32);
     // bottom transition blocks
-    obj.sprites[4].position.set(obj.x, h - 8);
+    obj.sprites[4].position.set(obj.x, h - 32);
     // top transition blocks
     obj.sprites[5].position.set(obj.x, obj.y);
 }
@@ -118,8 +117,8 @@ let ceilingDraw = function(obj) {
 }
 
 let floorDraw = function(obj) {
-    obj.sprites[0].position.set(obj.x, obj.y - 2);
-    obj.sprites[1].position.set(obj.x, obj.y + 6);
+    obj.sprites[0].position.set(obj.x, obj.y);
+    obj.sprites[1].position.set(obj.x, obj.y + 32);
 }
 
 let pushOntoLayer = function(obj, layerNum) {
@@ -149,6 +148,11 @@ let redraw = function() {
     // visibles is a list of lists, in order to allow for control over rendering layers
 }
 
+let clear = function() {
+    visibles.length = 0;
+    app.stage.children = [];
+}
+
 export default { viewport, redraw, visibles, pushOntoLayer, floorDraw, app, flipSprites, singleDraw,
-		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, 
+		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, clear,
 		 rightWallDraw, leftWallDraw, singleDraw, genSprite, };

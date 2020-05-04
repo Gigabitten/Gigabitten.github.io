@@ -148,16 +148,25 @@ function updateState() {
     
     switch(p.state) {
     case 2:
-    case 4:
-	p.renderOffsetX = -4;
-	p.renderOffsetY = 4;
+	p.renderOffsetX = -8;
+	p.renderOffsetY = 0;
 	break;
-    case 1:
-    case 3:
+    case 4:
 	p.renderOffsetX = 0;
 	p.renderOffsetY = 0;
 	break;
+    case 1:
+	p.renderOffsetX = 0;
+	p.renderOffsetY = 0;
+	break;
+    case 3:
+	p.renderOffsetX = 0;
+	p.renderOffsetY = -8;
+	break;
     }
+    // Why these offsets? I honestly do not know. I used to know, then when I changed the tile size
+    // to 32x32... something just broke and these numbers fixed it. No idea why this works.
+    // These offsets were originally just here to deal with the wonkiness of player rotation.
     
     p.lastState = p.state;
 
@@ -272,13 +281,6 @@ function unrotate() {
  * down walls it's sticking to.
  */
 function doingControls() {
-    let n = 0;
-    if(p.landed) n++;
-    if(p.hitRightWall) n++;
-    if(p.hitLeftWall) n++;
-    if(p.hitCeiling) n++;
-    if(n !== 0) console.log(n);
-    
     updateState();
 
     if(p.collidedWith !== undefined) {

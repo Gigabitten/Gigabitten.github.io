@@ -175,8 +175,7 @@ let killHandler = function(r1, r2) {
 let checkpointHandler = function(r1, r2) {
     let [p,r] = pAndR(r1, r2);
     if(p.name === 1 && isRectInRect(p, r)) {
-	p.xSpawn = p.x;
-	p.ySpawn = p.y;
+	r.check(p);
     }
 }
 
@@ -188,6 +187,19 @@ let colorHandler = function(r1, r2) {
 	} else {
 	    r1.color = '#ff0000';
 	    r2.color = '#ff0000';
+	}
+    }
+}
+
+let fireflyHandler = function(r1, r2) {
+    if(isRectInRect(r1, r2)) {
+	if(r2.name === 10 && r1.name === 1) {
+	    r2.destroy();
+	    r1.score++;
+	}
+	if(r1.name === 10 && r2.name === 1) {
+	    r1.destroy();
+	    r2.score++;
 	}
     }
 }
@@ -206,5 +218,10 @@ let doCollisions = function() {
     }
 }
 
+let clear = function() {
+    colliders.length = 0;
+}
+
 export default { colliders, doCollisions, pushOutHandler, colorHandler, wallHandler, isInRange,
-		 rangesOverlap, isRectInRect, killHandler, checkpointHandler, };
+		 rangesOverlap, isRectInRect, killHandler, checkpointHandler, fireflyHandler,
+		 clear, };

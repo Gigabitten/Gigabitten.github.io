@@ -13,6 +13,8 @@ const gameSpeed = 60;
 const timeStep = 1000 / gameSpeed; // 16.666...
 let t0 = performance.now();
 let frameCount = 0;
+let frameTime = 1000/60;
+let accumDiff = 0;
 
 let tt = 0; // time tracker
 
@@ -28,56 +30,56 @@ function possibleTimingError(t) {
 
 let last = 0;
 function getDiff(s) {
-    if(frameCount > 10 && frameCount < 20 && trackFrameTime) {
+    let diff;
+    let tn = performance.now();
+    diff = tn - last;
+    last = tn;
+    if(frameCount > 110 && frameCount < 120 && trackFrameTime) {
 	console.log(s);
-	let tn = performance.now();
-	console.log(tn - last);
-	last = tn;
+	console.log(diff);
     }
+    return diff;
 }
 
-let gameLoop = function() {
+let gameLoop = function(delta) {
     let t = performance.now();
-    if(frameCount * timeStep < t - t0) {
-	if(frameCount % 60 === 0) {
-	    possibleTimingError(t);
-	    //	    SC.updateView();
-	    // doesn't work with all browsers
-	}
-	/* the order of these steps can be important
-	 * physics has to happen between collisions and doingControls
-	 * otherwise doingControls resets temp physics handlers
-	 */
-	getDiff("Time to go from bottom to top:");
-	frameCount++;
-	
-	N.doPhysics();
-	getDiff("Time to do physics:");
-	
-	C.doCollisions();
-	getDiff("Time to do collision:");
-	
-	Con.doingControls();
-	getDiff("Time to do controls:");
-	
-	SC.scroll();
-	getDiff("Time to scroll:");
-	
-	R.redraw();
-	getDiff("Time to redraw:");
+    if(frameCount % 60 === 0) {
+	possibleTimingError(t);
+	//	    SC.updateView();
+	// doesn't work with all browsers
     }
-    window.requestAnimationFrame(gameLoop);
+    /* the order of these steps can be important
+     * physics has to happen between collisions and doingControls
+     * otherwise doingControls resets temp physics handlers
+     */
+    frameCount++;
+    N.doPhysics();
+    C.doCollisions();
+    Con.doingControls();
+    SC.scroll();
+    R.redraw();
 }
 window.addEventListener("keydown", Con.frogControls);
 window.addEventListener("keyup", Con.frogControls);
 
-let singulars = [0,7];
-
 let init = function() {
     M.map1();
-    window.requestAnimationFrame(gameLoop);
+    R.app.ticker.add(delta => gameLoop(delta));
 }
 
 PIXI.loader
-    .add('img/spritesheet.json')
+    .add('img/Dev.png')
+    .add('img/Frog.png')
+    .add('img/Lilypad.png')
+    .add('img/Peat-Bare.png')
+    .add('img/Peat-Bare-Transition.png')
+    .add('img/Peat-Bare-Transition-Tree.png')
+    .add('img/Peat-Bare-Transition-Tree-Top.png')
+    .add('img/Peat-Dead.png')
+    .add('img/Peat-Dead-Tree.png')
+    .add('img/Peat.png')
+    .add('img/Firefly.png')
     .load(init);
+
+
+

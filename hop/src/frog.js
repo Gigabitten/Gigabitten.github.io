@@ -36,6 +36,8 @@ let frogify = function(obj) {
     obj.facing = 2;
     obj.desiredFacing = 2;
     obj.desiredRelFacing = 2;
+
+    obj.score = 0;
 }
 
 let player = new Object();
@@ -49,8 +51,7 @@ let makeFrog = function(obj) {
     N.mover(obj, 0, 0, 0, 0, 0, 0, N.basicMove);
     N.bodies.push(obj);
     obj.draw = R.playerDraw;
-    obj.sprites[0] = R.genSprite("frog.bmp");
-    obj.sprites.map((s) => s.anchor.set(0.5, 0.5));
+    obj.sprites[0] = R.genSprite("img/Frog.png");
     S.anchorAndAdd(obj);
 }
 

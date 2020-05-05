@@ -1,0 +1,37 @@
+Rect Side #'s
+(also analogous to states)
+   1
+   ^
+4<-0->2
+   v
+   3
+
+Gamestates
+0 - main menu
+1 - gameplay
+2 - paused
+3 - respawning
+4 - level transition
+
+Names
+0 - text
+1 - frog
+2 - wall
+3 - rect
+4 - killRect
+5 - checkpoint
+6 - swamp floor
+7 - swamp left wall
+8 - swamp right wall
+9 - swamp ceiling
+10 - HUD text
+
+Sprites/Textures
+0 - player
+1 - swamp floor surface 
+2 - wet swampy dirt 
+3 - swamp wall surface 
+4 - swamp wall bottom/top 
+5 - swamp wall/ceiling inner 
+6 - swamp wall/ceiling transition 
+7 - lilypad

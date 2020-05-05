@@ -27,6 +27,8 @@ let frogify = function(obj) {
 	this.y = this.ySpawn;
 	this.xVel = 0;
 	this.yVel = 0;
+	R.viewport.x = this.x - (R.viewport.width / 2)
+	R.viewport.y = this.y - (R.viewport.height / 2)
     }
 
     obj.renderOffsetX = 0;

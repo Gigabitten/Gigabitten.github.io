@@ -10,6 +10,10 @@ Having trouble with something? Code look like nonsense? Terrible bug? Make sure 
 
 -are you doing F.thing instead of F.player.thing?
 
--is the structure of controls.js annoying to you? don't worry, it is to me too. the only way to fix it is with linera algebra and I don't know enough linera algebra, sorry future me for making you write
- all that four times
+-level loading is pretty spaghetti. The checkpoint creation function is a higher-order function which
+ takes a function which is executed when the player collides with it. This was the best way I could
+ see to get the scopes to work out such that the place where the checkpoints are defined by convention
+ (the main map loading file) would be able to have its code executed when checkpoints are collided
+ with.
 
+-

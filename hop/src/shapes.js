@@ -28,6 +28,10 @@ let rect = function(x, y, w, h, r) {
 }
 
 let dev = function(x, y, w, h, r) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    h *= 32;    
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.name = 6;
@@ -58,6 +62,10 @@ let collidableRect = function(x, y, w, h, r, l) {
 }
 
 let ceiling = function(x, y, w, h, r) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    h *= 32;
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.draw = R.ceilingDraw;
@@ -68,6 +76,10 @@ let ceiling = function(x, y, w, h, r) {
 }
 // walls need an orientation - 2 for right internal walls, 4 for left
 let wall = function(x, y, w, h, o, r) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    h *= 32;
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r, 11);
     if(o === 2) {
@@ -91,6 +103,10 @@ let wall = function(x, y, w, h, o, r) {
 }
 
 let floor = function(x, y, w, h, r) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    h *= 32;
     if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.name = 6;
@@ -101,6 +117,10 @@ let floor = function(x, y, w, h, r) {
 }
 
 let killRect = function(x, y, w, h, r) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    h *= 32;    
     if(r === undefined) r = new Object();
     dev(x, y, w, h, r);
     r.collisionHandler = C.killHandler;
@@ -108,6 +128,8 @@ let killRect = function(x, y, w, h, r) {
 }
 
 let checkpoint = function(x, y, f) {
+    x *= 32;
+    y *= 32;
     let w = 64;
     let h = 32;
     let r = new Object();
@@ -121,10 +143,10 @@ let checkpoint = function(x, y, f) {
     anchorAndAdd(r);
 }
 
-let firefly = function(x, y, fx, fy) {
+let firefly = function(x, y, fx, fy, r) {
     let w = 8;
     let h = 8;
-    let r = new Object();
+    if(r === undefined) r = new Object();
     collidableRect(x, y, w, h, r);
     r.name = 10;
     r.sprites[0] = R.genSprite("img/Firefly.png", w, h);
@@ -154,5 +176,30 @@ let buildRoomBorder = function(w, h, t, c) {
     wall(w, -t, t, 2*t+h, 2); // right
 }
 
+let defaultStyle = new PIXI.TextStyle({
+    fontFamily: "sans-serif",
+    fontSize: 36,
+    wordWrap: true,
+    align: "center",
+});
+
+let text = function(m, x, y, w, tR) {
+    x *= 32;
+    y *= 32;
+    w *= 32;
+    if(tR === undefined) tR = new Object();
+    rect(x, y, w, 100000, tR);
+    tR.name = 0;
+    
+    let s = defaultStyle;
+    let text = new PIXI.Text(m, s);
+    text.style.wordWrapWidth = w;
+    
+    R.pushOntoLayer(tR, 18);
+    tR.sprites[0] = text;
+    tR.draw = R.singleDraw;
+    anchorAndAdd(tR);
+}
+
 export default { rect, buildRoomBorder, killRect, checkpoint, floor, wall, ceiling, anchorAndAdd,
-		 dev, firefly, };
+		 dev, firefly, text, };

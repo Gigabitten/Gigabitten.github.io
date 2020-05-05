@@ -14,10 +14,10 @@ let load = function() {
     R.viewport.maxX = 1088;
     R.viewport.maxY = 1088;
 
-    S.floor(-2048, 1024, 4096, 2048);
-    S.ceiling(-2048, -2048, 4096, 2048);
-    S.wall(-2048, 0, 2048, 1056, 4);
-    S.wall(1024, 0, 2048, 1056, 2);
+    S.floor(-64, 32, 128, 64);
+    S.ceiling(-64, -64, 128, 64);
+    S.wall(-64, 0, 64, 33, 4);
+    S.wall(32, 0, 64, 33, 2);
 
     S.firefly(200, 930);
     F.makeFrog(F.player);

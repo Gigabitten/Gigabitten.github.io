@@ -132,6 +132,12 @@ let playerDraw = function(obj) {
     obj.sprites[0].position.set(obj.x + obj.renderOffsetX, obj.y + obj.renderOffsetY);
 }
 
+let HUDDraw = function(obj) {
+    obj.sprites.map((s) => {
+	s.position.set(obj.x + viewport.x, obj.y + viewport.y);
+    });
+}
+
 let redraw = function() {
     visibles.map(x => {
 	x.map(o => {
@@ -154,5 +160,5 @@ let clear = function() {
 }
 
 export default { viewport, redraw, visibles, pushOntoLayer, floorDraw, app, flipSprites, singleDraw,
-		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, clear,
+		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, clear, HUDDraw, 
 		 rightWallDraw, leftWallDraw, singleDraw, genSprite, };

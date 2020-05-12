@@ -154,14 +154,16 @@ let redraw = function() {
 	    if(o.draw !== undefined) {
 		o.x -= viewport.x;
 		o.y -= viewport.y;
-		o.sprites.map(s => {
-		    s.x -= s.width / 2;
-		    s.y -= s.height / 2;
-		    if(C.isRectInRect(s, r)) s.visible = true;
-		    else s.visible = false;
-		    s.x += s.width / 2;
-		    s.y += s.height / 2;
-		});
+		if(o.name !== 11) { // clickable text has its own visibility management
+		    o.sprites.map(s => {
+			s.x -= s.width / 2;
+			s.y -= s.height / 2;
+			if(C.isRectInRect(s, r)) s.visible = true;
+			else s.visible = false;
+			s.x += s.width / 2;
+			s.y += s.height / 2;
+		    });
+		}
 		o.draw(o);
 		accountForAnchor(o);
 		o.x += viewport.x;

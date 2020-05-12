@@ -205,7 +205,8 @@ let clickableText = function(m, x, y, w, f, tR) {
     text(m, x, y, w, tR);
     Cl.clickables.push(tR);    
     tR.clickHandler = f;
-    anchorAndAdd(tR);    
+    tR.name = 11;
+    anchorAndAdd(tR);
 }
 
 let floatingIsland = function(x, y, w, h) {

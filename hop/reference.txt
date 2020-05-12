@@ -25,6 +25,7 @@ Names
 8 - swamp right wall
 9 - swamp ceiling
 10 - HUD text
+11 - clickable text
 
 Sprites/Textures
 0 - player

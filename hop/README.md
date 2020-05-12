@@ -1,0 +1,14 @@
+Hop around! Eat bugs! Stick to things! All the things you always wanted to do, but never could because you weren't a frog.
+
+The code for this is admittedly pretty bad. It makes sense in most places, but the overall structure is pretty messy compared to how I'd do it if I could do it again. But it does work, which is the most important thing. If it's a bit laggy, try just decreasing your window size a bit. I tested this on some lower-end laptops and that makes a huge difference in performance. I don't think it *would* be an issue, but for some reason it keeps losing webgl and defaulting to canvas, which is much slower. Never was able to fix that.
+
+Pixi.js is this project's only dependency, and it's only a few megabytes. The rest is vanilla JS, and the rendering was vanilla js before I ran into extremely annoying problems with just the canvas. Pixi is only used for making the sprites, in fact - the collision is all in my code. I could have imported a lot more stuff and written half the code and better, but I really wanted to learn how all of it works from the ground up.
+
+There are a few files in the main folder that should help with any confusing aspects of the code, if anybody actually wants to read it. I plan to migrate the code away from Javascript because running things in the browser has a tremendous variety of problems, but I learned a lot about JS on the way!
+
+There are three levels - a tutorial, and two normal ones. It's not very smooth, but the game pauses for a moment to show you what time you got before moving to the next level. If I had a lot more time, I could polish out everything a ton, but this is a class project after all. For what it is, it turned out well.
+
+Credits:
+The bulk of the controls code: Addie Meders
+Sprites and textures: Benjamin Spiess
+The rest: me, Caleb Spiess

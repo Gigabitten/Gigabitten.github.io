@@ -39,6 +39,69 @@ function rotate() {
     }
 }
 
+function setRenderOffsets() {
+    switch(p.state) {
+    case 2:
+	p.renderOffsetX = -8;
+	p.renderOffsetY = 0;
+	break;
+    case 4:
+	p.renderOffsetX = 0;
+	p.renderOffsetY = 0;
+	break;
+    case 1:
+	p.renderOffsetX = 0;
+	p.renderOffsetY = 0;
+	break;
+    case 3:
+	p.renderOffsetX = 0;
+	p.renderOffsetY = -8;
+	break;
+    }
+    // Why these offsets? I honestly do not know. I used to know, then when I changed the tile size
+    // to 32x32... something just broke and these numbers fixed it. No idea why this works.
+    // These offsets were originally just here to deal with the wonkiness of player rotation.
+}
+
+function maybeAirborne() {
+    let collides = C.colliders.map((c) => {
+	if([2,6,7,8,9].includes(c.name)) {
+	    let dist;
+	    if(Math.abs(p.top() - c.bottom()) < 0.01 &&
+	       C.rangesOverlap(p.left(), p.right(), c.left(), c.right())) {
+		p.state = 1;
+		p.bottomHit = c;
+		return true;
+	    }
+	    else if(Math.abs(p.bottom() - c.top()) < 0.01 &&
+		    C.rangesOverlap(p.left(), p.right(), c.left(), c.right())) {
+		p.state = 3;
+		p.topHit = c;
+		return true;
+	    }
+	    else if(Math.abs(p.left() - c.right()) < 0.01 &&
+		    C.rangesOverlap(p.top(), p.bottom(), c.top(), c.bottom())) {
+		p.state = 4;
+		p.rightHit = c;
+		return true;
+	    }
+	    else if(Math.abs(p.right() - c.left()) < 0.01 &&
+		    C.rangesOverlap(p.top(), p.bottom(), c.top(), c.bottom())) {
+		p.state = 2;
+		p.leftHit = c;
+		return true;
+	    }
+	    else {
+		return false;
+	    }
+	}
+    });
+    if(collides.filter(x => x === true).length === 0) {
+	p.state = 0;
+	p.collidedWith = undefined;
+    }
+}
+
 function updateState() {    
     if(p.collidedWith === undefined) {
 	p.state = 0;
@@ -61,7 +124,7 @@ function updateState() {
 	let dist;
 	let hit;
 	
-	// Should be near zero when sticking.
+	// dist should be near zero when sticking.
 	switch(p.state) {
 	case 1:
 	    dist = p.top() - p.bottomHit.bottom();
@@ -91,8 +154,7 @@ function updateState() {
 	       ||
 	       (!C.rangesOverlap(p.top(), p.bottom(), hit.top(), hit.bottom()))
 	      ) { // so many parentheses but at least the code makes sense
-		p.state = 0;
-		p.collidedWith = undefined;
+		maybeAirborne();
 	    }
 	    break;
 	case 1:
@@ -101,39 +163,15 @@ function updateState() {
 	       ||
 	       (!C.rangesOverlap(p.left(), p.right(), hit.left(), hit.right()))
 	      ) {
-		p.state = 0;
-		p.collidedWith = undefined;
+		maybeAirborne();
 	    }
 	    break;
 	}
     }
     
     rotate();
-
+    setRenderOffsets();    
     p.snaps.map(x => x(p));
-    
-    switch(p.state) {
-    case 2:
-	p.renderOffsetX = -8;
-	p.renderOffsetY = 0;
-	break;
-    case 4:
-	p.renderOffsetX = 0;
-	p.renderOffsetY = 0;
-	break;
-    case 1:
-	p.renderOffsetX = 0;
-	p.renderOffsetY = 0;
-	break;
-    case 3:
-	p.renderOffsetX = 0;
-	p.renderOffsetY = -8;
-	break;
-    }
-    // Why these offsets? I honestly do not know. I used to know, then when I changed the tile size
-    // to 32x32... something just broke and these numbers fixed it. No idea why this works.
-    // These offsets were originally just here to deal with the wonkiness of player rotation.
-
     p.lastState = p.state;
 
     p.landed = false; // these have to be set somewhere else to become true

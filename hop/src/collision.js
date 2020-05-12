@@ -14,8 +14,8 @@ function rangesOverlap(aS, aE, bS, bE) { // a start, a end, b start, b end
 }
 
 let isPointInRect = function(r, x, y) {
-    return isInRange(x, r.x, r.x + r.width)
-	&& isInRange(y, r.y, r.y + r.height);
+    return isInRange(x, r.left(), r.right())
+	&& isInRange(y, r.top(), r.bottom());
 }
 
 let isRectInRect = function(r1, r2) {
@@ -224,4 +224,4 @@ let clear = function() {
 
 export default { colliders, doCollisions, pushOutHandler, colorHandler, wallHandler, isInRange,
 		 rangesOverlap, isRectInRect, killHandler, checkpointHandler, fireflyHandler,
-		 clear, };
+		 clear, isPointInRect, };

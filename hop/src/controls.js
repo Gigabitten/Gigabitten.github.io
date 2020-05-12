@@ -2,34 +2,44 @@ import F from "./frog.js";
 import N from "./newton.js";
 import C from "./collision.js";
 import St from "./state.js";
+import M from "./maps.js";
 
 const speed = 8;
 const jumpSpeed = 20;
 
 let p = F.player;
-
+// frogControls was written by Addie - it's almost all the code she wrote for hop before we decided
+// to do our projects separately
 let frogControls = function(event) {
-    var key_state = event.type == "keydown";
-    switch(event.keyCode) {
-    case 65: //A Key
-    case 37: //Left Key
-        p.leftInput = key_state;
-        break;
-	
-    case 87: //W Key	
-    case 38: //Up Key
-    case 32: // spacebar
-        p.upInput = key_state;
-        break;
-	
-    case 68: //D Key	
-    case 39: //Right Key
-        p.rightInput = key_state;
-        break;
+    if(p.controls !== undefined && p.controls === true) {
+	var key_state = event.type == "keydown";
+	switch(event.keyCode) {
+	case 65: //A Key
+	case 37: //Left Key
+            p.leftInput = key_state;
+            break;
+	    
+	case 87: //W Key	
+	case 38: //Up Key
+	case 32: // spacebar
+            p.upInput = key_state;
+            break;
+	    
+	case 68: //D Key	
+	case 39: //Right Key
+            p.rightInput = key_state;
+            break;
 
-    case 83: // S Key
-    case 40: // Down Key
-	p.downInput = key_state;
+	case 83: // S Key
+	case 40: // Down Key
+	    p.downInput = key_state;
+	    break;
+	case 82: // R key
+	    if(key_state) p.map();
+	    break;
+	case 27: // Esc Key
+	    if(key_state) M.MM();
+	}
     }
 }
 // necessary because rotation changes the width and height

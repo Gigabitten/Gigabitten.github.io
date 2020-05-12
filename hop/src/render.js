@@ -1,3 +1,4 @@
+import C from "./collision.js";
 /* If anything seems redundant regarding visibility management, that's because I switched from
  * vanilla canvas bindings to pixi when it turned out that tiling textures is awful without some
  * sort of library to help.
@@ -5,9 +6,13 @@
  * Drawing is the same. Drawing used to do a bunch of canvas stuff and then pixi made rendering cake
  * so all I have to do is update sprite positions relative to the object.
  */
-let app = new PIXI.Application({width: document.documentElement.clientWidth + 1,
-			    height: document.documentElement.clientHeight + 1,
-			    backgroundColor: 0x009933,
+let canvas = document.getElementById("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let app = new PIXI.Application({width: canvas.width,
+				height: canvas.height,
+				backgroundColor: 0x009933,
+				view: canvas,
 			   });
 document.body.appendChild(app.view);
 let stage = app.stage;
@@ -34,8 +39,8 @@ let yOffsetDelta = { yO: 0 };
 let viewport = {
     x: 0,
     y: 0,
-    width: (document.documentElement.clientWidth / 2) * (3 / 4),
-    height: (document.documentElement.clientHeight / 2) * (3 / 4),
+    width: canvas.width / 2,
+    height: canvas.height / 2,
     top: function() {
 	return this.y;
     },
@@ -139,11 +144,24 @@ let HUDDraw = function(obj) {
 }
 
 let redraw = function() {
+    let r = new Object();
+    r.x = -16;
+    r.y = -16;
+    r.width = viewport.width + 32;
+    r.height = viewport.height + 32;
     visibles.map(x => {
 	x.map(o => {
 	    if(o.draw !== undefined) {
 		o.x -= viewport.x;
 		o.y -= viewport.y;
+		o.sprites.map(s => {
+		    s.x -= s.width / 2;
+		    s.y -= s.height / 2;
+		    if(C.isRectInRect(s, r)) s.visible = true;
+		    else s.visible = false;
+		    s.x += s.width / 2;
+		    s.y += s.height / 2;
+		});
 		o.draw(o);
 		accountForAnchor(o);
 		o.x += viewport.x;
@@ -161,4 +179,4 @@ let clear = function() {
 
 export default { viewport, redraw, visibles, pushOntoLayer, floorDraw, app, flipSprites, singleDraw,
 		 xOffsetDelta, yOffsetDelta, playerDraw, genTile, ceilingDraw, clear, HUDDraw, 
-		 rightWallDraw, leftWallDraw, singleDraw, genSprite, };
+		 rightWallDraw, leftWallDraw, singleDraw, genSprite, zoom, };

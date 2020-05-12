@@ -1,0 +1,28 @@
+import S from "./shapes.js"
+import N from "./newton.js";
+import F from "./frog.js";
+import C from "./collision.js";
+import R from "./render.js";
+
+let load = function() {
+    R.viewport.minX = -1024;
+    R.viewport.minY = -64;
+    R.viewport.maxX = 1440;
+    R.viewport.maxY = 1056;
+
+    S.floor(-64, 32, 128, 64); // lower floor
+
+    S.firefly(512, 712, function(obj) { // circling firefly
+	return obj.baseX - 300 * Math.cos(obj.count / 120);
+    }, function(obj) {
+	return obj.baseY + 100 * Math.sin(obj.count / 120);
+    });
+
+    F.makeFrog(F.player);
+    F.player.xSpawn = -900;
+    F.player.ySpawn = 960;
+    F.player.neededScore = 5;
+    F.player.respawn();
+}
+
+export default { load, }

@@ -1,3 +1,4 @@
+// TODO: Viewport doesn't match, erm, well... the actual viewport on the page.
 import N from "./src/newton.js";
 import R from "./src/render.js";
 import C from "./src/collision.js";
@@ -6,6 +7,7 @@ import F from "./src/frog.js";
 import SC from "./src/screenControl.js";
 import Con from "./src/controls.js";
 import M from "./src/maps.js";
+import Cl from "./src/clicks.js";
 
 let trackFrameTime = false;
 
@@ -61,9 +63,10 @@ let gameLoop = function(delta) {
 }
 window.addEventListener("keydown", Con.frogControls);
 window.addEventListener("keyup", Con.frogControls);
+window.addEventListener("click", Cl.clickHandler);
 
 let init = function() {
-    M.map1();
+    M.MM();
     R.app.ticker.add(delta => gameLoop(delta));
 }
 

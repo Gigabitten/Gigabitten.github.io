@@ -88,5 +88,5 @@ let clear = function() {
     bodies.length = 0;
 }
 
-export default { bodies, doPhysics, mover, basicMove, noGrav, tV, applyVel, clear, 
+export default { bodies, doPhysics, mover, basicMove, noGrav, tV, applyVel, clear,
 	       };

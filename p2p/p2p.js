@@ -16,6 +16,12 @@ function randomHexString(length) {
     return s;
 }
 
+function checkEnter1(e, f) {
+    if(e.keyCode == 13) {
+	f();
+    }
+}
+
 user.on("open", (id) => {
     let idText = "Your ID: " + id;
     peerIdSpace.innerHTML = idText;
@@ -26,7 +32,7 @@ user.on("open", (id) => {
 	'<div class="input-group-prepend" id="messages">',
 	'<button  type="button" class="btn btn-secondary" onclick="connect()">Connect</button>',
 	'</div>',	
-	'<input type="text" class="form-control" id="idBox" placeholder="Enter a friend\'s ID to connect!">',
+	'<input type="text" onkeypress="checkEnter1(event, connect)" class="form-control" id="idBox" placeholder="Enter a friend\'s ID to connect!">',
 	'</div>',	
 	'Alternatively, wait for a connection!',
     ].join("");
@@ -42,6 +48,12 @@ user.on("connection", (recievedConn) => {
     begin();
 });
 
+function begin() {
+    
+}
+
+// The following section of code was mostly for my own sake, to make sure I understand
+ 
 function addMsg(msg) {
     let messages = document.getElementById("messages");
     messages.innerHTML = messages.innerHTML + '<br>\u2003\u2003\u2003\u2003\u00A0\u00A0\u00A0' + msg;
@@ -62,7 +74,7 @@ function begin() {
 	'<div class="input-group-prepend">',	
 	'<button type="button" class="btn btn-secondary" onclick="sendMsg()">Send</button>',
 	'</div>',	
-	'<input type="text" class="form-control" id="messageBox" placeholder="Send a message">',
+	'<input type="text" onkeypress="checkEnter1(event, sendMsg)" class="form-control" id="messageBox" placeholder="Send a message">',
 	'</div>',
 	'</div>',	
     ].join("");
@@ -71,5 +83,3 @@ function begin() {
 	addMsg(data);
     });
 }
-
-

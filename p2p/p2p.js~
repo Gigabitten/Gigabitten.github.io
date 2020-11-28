@@ -1,0 +1,7 @@
+var peerIdSpace = getElementById("peerID");
+var msgBox = getElementById("messageBox");
+var me = new Peer();
+peer.on("open", (id) => {
+    peerIDSpace.innerHTML = id;
+    console.log("ID is " + id);
+});

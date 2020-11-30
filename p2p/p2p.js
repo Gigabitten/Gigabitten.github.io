@@ -16,8 +16,11 @@ function randomHexString(length) {
     return s;
 }
 
+var host;
+
 function connect() {
-    conn = user.connect(document.getElementById("idBox").value);
+    conn = user.connect(document.getElementById("idBox").value, { reliable: true, });
+    host = true;
     begin();
 };
 
@@ -50,6 +53,7 @@ user.on("open", (id) => {
 
 user.on("connection", (recievedConn) => {
     conn = recievedConn;
+    host = false;
     begin();
 });
 
@@ -82,7 +86,9 @@ function run() {
     var cursors;
     var p1;
     var p2;
-    var p2Input = new Input(false, false, false);
+    var p2Queue = new Array();
+    var frame = 0;
+    var recieved = 0;
 
     function preload() {
 
@@ -103,15 +109,24 @@ function run() {
 	this.physics.add.collider(floor, p2);
 
 	cursors = this.input.keyboard.createCursorKeys();
+
+	if(!host) {
+	    var temp = p1;
+	    p1 = p2;
+	    p2 = temp;
+	}
 	
 	conn.on("data", (data) => {
-	    p2Input = data;
+	    p2Queue.push(data);
+	    recieved++;
 	});
     }
 
     function update() {
-	// catastrophically hacky
-	conn.send(new Input(cursors.right.isDown, cursors.left.isDown, cursors.up.isDown));
+	frame++;	
+	conn.send(new Input(cursors.left.isDown, cursors.right.isDown, cursors.up.isDown));
+
+	if(p2Queue.length < 2 && frame > 100) console.log("Ran out of input from remote player");
 	
 	if(p1.y > 600) {
 	    p1.x = 150;
@@ -131,16 +146,19 @@ function run() {
 
 	var xMax = 750;
 	var yMax = 1000;
-	
-	if (cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
-	else if (cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
-	else p1.body.setAccelerationX(0);
-	if (cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
+	if(p2Queue.length > 6) {
+	    if(cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
+	    else if(cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
+	    else p1.body.setAccelerationX(0);
+	    if(cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
 
-	if (p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
-	else if (p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
-	else p2.body.setAccelerationX(0);
-	if (p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);	
+	    if(p2Queue[0].left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
+	    else if(p2Queue[0].right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
+	    else p2.body.setAccelerationX(0);
+	    if(p2Queue[0].up && p2.body.touching.down) p2.body.setVelocityY(-1000);
+
+	    p2Queue.shift();	    
+	}
 
 	// custom collision checking because the basic check is weird with shapes and it's easyish
 	var xDist = p1.x - p2.x;

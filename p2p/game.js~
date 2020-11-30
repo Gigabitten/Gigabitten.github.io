@@ -1,0 +1,71 @@
+function run() {
+    var config = {
+	type: Phaser.AUTO,
+	width: 800,
+	height: 600,
+	transparent: true,
+	physics: {
+	    default: 'arcade',
+	    arcade: {
+		gravity: { y: 2000 },
+		debug: false,
+	    }
+	},
+	scene: {
+	    preload: preload,
+	    create: create,
+	    update: update,
+	}
+    };
+
+    var game = new Phaser.Game(config);
+    var cursors;
+    var p1;
+    var p2;
+
+    function preload() {
+
+    }
+
+    function create() {
+	var floor = this.add.rectangle(400, 550, 500, 100, 0xeeeeee);
+	this.physics.add.existing(floor, true);
+	
+	p1 = this.add.circle(150, 100, 20, 0x00ff00);
+	this.physics.add.existing(p1);
+	p1.body.setBounce(0.2);
+	p2 = this.add.circle(650, 100, 20, 0xff0000);
+	this.physics.add.existing(p2);
+	//p2.body.setBounce(0.2);
+	p2.body.setBounce(1);
+	
+	this.physics.add.collider(floor, p1);
+	this.physics.add.collider(floor, p2);
+
+	cursors = this.input.keyboard.createCursorKeys();
+    }
+
+    function whack(p1, p2) {
+	var c = 0.3;
+	var x = p1.body.velocity.x;
+	var y = p1.body.velocity.y;
+	p1.body.setVelocityX(p2.body.velocity.x - x * c);
+	p1.body.setVelocityY(p2.body.velocity.y - x * c);
+	p2.body.setVelocityX(x + p2.body.velocity.x * c);
+	p2.body.setVelocityY(y + p2.body.velocity.y * c);
+    }
+
+    function update() {
+	if (cursors.left.isDown) p1.body.setAccelerationX(-1000);
+	else if (cursors.right.isDown) p1.body.setAccelerationX(1000);
+	else p1.body.setAccelerationX(0);
+	if (cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
+
+	// custom collision checking because the basic check is weird with shapes and it's easy in this case
+	var xDist = Math.abs(p1.x - p2.x);
+	var yDist = Math.abs(p1.y - p2.y);
+	if(Math.sqrt(xDist * xDist + yDist * yDist) < p1.width + p2.width) whack(p1, p2);
+    }
+}
+
+export default { run, };

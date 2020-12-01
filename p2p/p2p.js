@@ -57,8 +57,13 @@ user.on("connection", (recievedConn) => {
     begin();
 });
 
+function coordinateTime() {
+    
+}
+
 function begin() {
     app.innerHTML = "";
+    coordinateTime();
     run();
 }
 
@@ -88,11 +93,14 @@ function run() {
     var p2;
     var p2Queue = new Array();
     var frame = 0;
-    var recieved = 0;
+    var t0;
+    var syncTo;
+    var timeRecieved = false;
+    var secTime;
+    var timeSet = false;
+    
 
-    function preload() {
-
-    }
+    function preload() { }
 
     function create() {
 	var floor = this.add.rectangle(400, 550, 500, 100, 0xeeeeee);
@@ -110,33 +118,90 @@ function run() {
 
 	cursors = this.input.keyboard.createCursorKeys();
 
-	if(!host) {
+	if(host) {
+	    t0 = Date.now() + 2000;
+	    conn.send({ type: "timeSetup", t0: t0, });
+	} else {
 	    var temp = p1;
 	    p1 = p2;
-	    p2 = temp;
+	    p2 = temp;	    
 	}
 	
 	conn.on("data", (data) => {
-	    p2Queue.push(data);
-	    recieved++;
+	    // string comparison is slightly slow, I know, but this is *very* easy to read
+	    if(data.type === "timeSetup") {
+		t0 = data.t0;
+	    }
+	    if(data.type === "timeSync") {
+		syncTo = data.time;
+		timeRecieved = true;
+	    }
+	    if(data.type === "update") {
+		p2Queue.push(data);
+	    }
 	});
     }
 
+    function fixState(state) {
+	p2.x = state.x;
+	p2.y = state.y;
+	p2.body.setVelocityX(state.xv);
+	p2.body.setVelocityY(state.yv);
+    }
+
     function update() {
-	frame++;	
-	conn.send(new Input(cursors.left.isDown, cursors.right.isDown, cursors.up.isDown));
+	// waiting for the agreed-upon time
+	while(Date.now() < t0) { };
+
+	if(frame % 60 === 0) {
+	    conn.send({ type: "timeSync", time: Date.now(), });
+	    secTime = Date.now();
+	    timeSet = true;
+	}
+	if(timeSet && timeRecieved) {
+	    timeSet = false;
+	    timeRecieved = false;
+	    let t = Date.now();
+	    while(Date.now() < t + (syncTo - secTime)) { }
+	}
+	
+	frame++;
+	var frameInput = {
+	    left: cursors.left.isDown,
+	    right: cursors.right.isDown,
+	    up: cursors.up.isDown
+	};
+	var frameState = {
+	    x: p1.x,
+	    y: p1.y,
+	    xv: p1.body.velocity.x,
+	    yv: p1.body.velocity.y,
+	};
+	
+	// just sending the objects is inefficient but the sent data is absolutely tiny
+	conn.send({ type: "update", input: frameInput, state: frameState, });
 
 	if(p2Queue.length < 2 && frame > 100) console.log("Ran out of input from remote player");
 	
 	if(p1.y > 600) {
-	    p1.x = 150;
-	    p1.y = 100;
+	    if(host) {
+		p1.x = 150;
+		p1.y = 100;
+	    } else {
+		p1.x = 650;
+		p1.y = 100;
+	    }
 	    p1.body.setVelocityX(0);
-	    p1.body.setVelocityY(0);
+	    p1.body.setVelocityY(0);	    
 	}
 	if(p2.y > 600) {
-	    p2.x = 650;
-	    p2.y = 100;
+	    if(host) {
+		p2.x = 650;
+		p2.y = 100;
+	    } else {
+		p2.x = 150;
+		p2.y = 100;
+	    }
 	    p2.body.setVelocityX(0);
 	    p2.body.setVelocityY(0);
 	}
@@ -146,18 +211,23 @@ function run() {
 
 	var xMax = 750;
 	var yMax = 1000;
-	if(p2Queue.length > 6) {
+	if(p2Queue.length > 2) {
+	    fixState(p2Queue[0].state);
+	    console.log(`p2Queue length: ${p2Queue.length}`);
+	    if(frames % 60 === 0) console.log(`Seconds passed: ${Math.floor(frames / 60)}`);
+
 	    if(cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
 	    else if(cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
 	    else p1.body.setAccelerationX(0);
 	    if(cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
 
-	    if(p2Queue[0].left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
-	    else if(p2Queue[0].right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
+	    var p2Input = p2Queue[0].input;
+	    if(p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
+	    else if(p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
 	    else p2.body.setAccelerationX(0);
-	    if(p2Queue[0].up && p2.body.touching.down) p2.body.setVelocityY(-1000);
+	    if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
 
-	    p2Queue.shift();	    
+	    p2Queue.shift();
 	}
 
 	// custom collision checking because the basic check is weird with shapes and it's easyish
@@ -187,19 +257,6 @@ function run() {
 	    p2.body.setVelocityY(p2.body.velocity.y + p * ny);
 	}
     }
-}
-
-
-class Input {
-    constructor(l, r, u) {
-	this.left = l;
-	this.right = r;
-	this.up = u;
-    }
-};
-
-function sendInput() {
-    
 }
 
 // The following section of code was mostly for my own sake, to make sure I understand

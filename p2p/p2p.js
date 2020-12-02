@@ -73,21 +73,6 @@ var gravity = 1.3;
 var ready = false;
 
 function begin() {
-    conn.on("data", (data) => {
-	// string comparison is slightly slow, I know,
-	// but this is *very* easy to read
-	if(data.type === "timeSetup" && !ready) {
-	    t0 = data.time;
-	    ready = true;
-	}
-	if(data.type === "timeSync") {
-	    syncTo = data.time;
-	    timeRecieved = true;
-	}
-	if(data.type === "update") {
-	    p2.inputQueue[data.schedFrame] = data;
-	}
-    });
     app.innerHTML = "";
     run();
 }
@@ -106,12 +91,67 @@ function run() {
 
     var frame = 0;
     var delay = 3;
-    var leftPressed = false;
-    var rightPressed = false;
-    var upPressed = false;
+    var input = {
+	left: false,
+	right: false,
+	up: false,
+    };
+    var lastGoodFrame = 0;
 
     window.addEventListener("keydown", handleInput);
     window.addEventListener("keyup", handleInput);
+
+    conn.on("data", (data) => {
+	// string comparison is slightly slow, I know,
+	// but this is *very* easy to read
+	if(data.type === "timeSetup" && !ready) {
+	    t0 = data.time;
+	    ready = true;
+	}
+	if(data.type === "timeSync") {
+	    syncTo = data.time;
+	    timeRecieved = true;
+	}
+	if(data.type === "update") {
+	    handleRemoteInput(data);
+	}
+    });
+
+    function equalInputs(a, b) {
+	return (a.left === b.left &&
+		a.right === b.right &&
+		a.up === b.up);
+    }
+
+    function setState(p, state) {
+	p.x = state.x;
+	p.y = state.y;
+	p.vx = state.vx;
+	p.vy = state.vy;
+	p.onFloor = state.onFloor;	
+    }        
+
+    function rollback(frameTo) {
+	console.log("Rolled back!");
+	[p1,p2].map(p => setState(p, p.stateQueue[frameTo]));
+    }
+
+    function handleRemoteInput(data) {
+	var startFrame = frame;
+	lastGoodFrame = data.schedFrame;
+	p2.inputQueue = p2.inputQueue.splice(data.schedFrame - 1, 1);
+	if(typeof p2.inputQueue[data.schedFrame] == "undefined") {
+	    p2.inputQueue[data.schedFrame] = data.input;
+	} else {
+	    if(!equalInputs(data.input, p2.inputQueue[data.schedFrame]) &&
+	       data.schedFrame < frame) {
+		frame = data.schedFrame;
+		rollback(data.schedFrame);
+		p2.inputQueue[data.schedFrame] = data.input;
+		while(frame != startFrame) update();
+	    }
+	}
+    }
 
     // handleInput was more or less written by Addie Meders,
     // in a previous project we did together
@@ -120,18 +160,18 @@ function run() {
 	switch(e.keyCode) {
 	case 65: //A Key
 	case 37: //Left Key
-	    leftPressed = key_state;
+	    input.left = key_state;
 	    break;
 
 	case 87: //W Key
 	case 38: //Up Key
 	case 32: // spacebar
-	    upPressed = key_state;
+	    input.up = key_state;
 	    break;
 
 	case 68: //D Key
 	case 39: //Right Key
-	    rightPressed = key_state;
+	    input.right = key_state;
 	    break;
 	}
     }
@@ -181,6 +221,11 @@ function run() {
 	    stateQueue: new Array(),	    
 	    draw: drawCircle,
 	};
+	[p1,p2].map(p => p.inputQueue.push({
+	    left: false,
+	    right: false,
+	    up: false,
+	}));
 
 	scene = [floor, p1, p2];
 
@@ -250,8 +295,9 @@ function run() {
 		vy: p.vy,
 		onFloor: p.onFloor,
 	    };
+	} else {
+	    return p.stateQueue[frame];
 	}
-	return p.stateQueue[frame];
     }
 
     function sleep(duration) {
@@ -263,7 +309,9 @@ function run() {
     function doPhysics(obj) {
 	obj.x += obj.vx;
 	obj.y += obj.vy;
-	obj.vx += obj.ax;
+	
+	var maxV = 10;
+	if(Math.abs(obj.vx + obj.ax) <= maxV) obj.vx += obj.ax;
 	obj.vy += obj.ay;
 
 	if(obj.y > 600) {
@@ -300,38 +348,42 @@ function run() {
     }
 
     function setFrame() {
+	[p1,p2].map(p => {
+	    p.stateQueue[frame + delay] = getState(p, frame);
+	});
+
 	var frameInput = {
-	    left: leftPressed,
-	    right: rightPressed,
-	    up: upPressed,
-	};
-	var frameState = getState(p1, frame);
+	    left: input.left,
+	    right: input.right,
+	    up: input.up,
+	}
 	// scheduling input on both sides
-	p1.inputQueue[frame + delay] = { input: frameInput, };
+	p1.inputQueue[frame + delay] = frameInput;
 	// just sending the objects is inefficient
 	// but the sent data is currently absolutely tiny
 	conn.send({
 	    type: "update",
 	    input: frameInput,
-	    state: frameState,
+	    state: p1.stateQueue[frame],
 	    schedFrame: frame + delay,
 	});
     }
 
     function processInput(p) {
-	var xMavx = 10;
-	var yMavx = 10;
-	var input = p.inputQueue[frame].input;
-
-	if(input.left && p.vx < xMavx) p.ax = -0.5;
-	else if(input.right && p.vy < yMavx) p.ax = 0.5;
+	var pInput;
+	if(typeof p.inputQueue[frame] == "undefined") {
+	    pInput = p.inputQueue[lastGoodFrame];
+	} else {
+	    pInput = p.inputQueue[frame];
+	}
+	
+	if(pInput.left) p.ax = -0.5;
+	else if(pInput.right) p.ax = 0.5;
 	else p.ax = 0;
-	if(input.up && p.onFloor) {
+	if(pInput.up && p.onFloor) {
 	    p.vy = -20;
 	    p.onFloor = false;
 	}
-
-	p.inputQueue = p.inputQueue.splice(frame - 3, 1);
     }
 
     function update() {
@@ -339,11 +391,8 @@ function run() {
 	[p1,p2].map(p => doPhysics(p));
 	collide();
 	render();
-	if(typeof p1.inputQueue[frame] !== "undefined" &&
-	   typeof p2.inputQueue[frame] !== "undefined") {
-	    fixState(p2.inputQueue[frame].state);
-	    [p1,p2].map(p => processInput(p));
-	}
+	//fixState(p2.inputQueue[frame].state);
+	[p1,p2].map(p => processInput(p));
     }
 
     function gameLoop() {

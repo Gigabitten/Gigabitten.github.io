@@ -57,6 +57,7 @@ user.on("connection", (recievedConn) => {
     begin();
 });
 
+var p1Queue = new Array();
 var p2Queue = new Array();
 var t0;
 var syncTo;
@@ -79,7 +80,7 @@ function begin() {
 	    timeRecieved = true;
 	}
 	if(data.type === "update") {
-	    p2Queue.push(data);
+	    p2Queue[data.schedFrame] = data.input;
 	}
     });        
     app.innerHTML = "";
@@ -181,12 +182,12 @@ function run() {
 		xv: p1.body.velocity.x,
 		yv: p1.body.velocity.y,
 	    };
-	    
-	    // just sending the objects is inefficient but the sent data is absolutely tiny
-	    conn.send({ type: "update", input: frameInput, state: frameState, });
 
-	    if(p2Queue.length < 2 && frame > 100) console.log("Ran out of input from remote player");
-	    
+	    // scheduling input on both sides
+	    p1Queue[frame + 2] = frameInput;
+	    // just sending the objects is inefficient but the sent data is absolutely tiny
+	    conn.send({ type: "update", input: frameInput, state: frameState, schedFrame: frame + 2, });
+
 	    if(p1.y > 600) {
 		if(host) {
 		    p1.x = 150;
@@ -215,22 +216,27 @@ function run() {
 
 	    var xMax = 750;
 	    var yMax = 1000;
-	    if(p2Queue.length > 2) {
-		fixState(p2Queue[0].state);
+	    if(typeof p1Queue[frame] !== "undefined" && typeof p2Queue[frame] !== "undefined") {  
+		//fixState(p2Queue[0].state);
 		//console.log(`p2Queue length: ${p2Queue.length}`);
 
-		if(cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
-		else if(cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
+		var p1Input = p1Queue[frame];
+		var p2Input = p2Queue[frame];
+		
+		if(p1Input.left && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
+		else if(p1Input.right && p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
 		else p1.body.setAccelerationX(0);
-		if(cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
+		if(p1Input.up && p1.body.touching.down) p1.body.setVelocityY(-1000);
 
-		var p2Input = p2Queue[0].input;
 		if(p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
 		else if(p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
 		else p2.body.setAccelerationX(0);
 		if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
 
-		p2Queue.shift();
+		p1Queue = p1Queue.splice(frame, 1);
+		p2Queue = p2Queue.splice(frame, 1);		
+	    } else {
+		console.log("Ran out of input somehow!");
 	    }
 
 	    // custom collision checking because the basic check is weird with shapes and it's easyish

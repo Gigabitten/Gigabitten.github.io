@@ -59,6 +59,7 @@ user.on("connection", (recievedConn) => {
 
 var p1Queue = new Array();
 var p2Queue = new Array();
+var p2State = new Array();
 var t0;
 var syncTo;
 var timeRecieved = false;
@@ -79,7 +80,7 @@ function begin() {
 	    timeRecieved = true;
 	}
 	if(data.type === "update") {
-	    p2Queue[data.schedFrame] = data.input;
+	    p2Queue[data.schedFrame] = data;
 	}
     });        
     app.innerHTML = "";
@@ -111,6 +112,7 @@ function run() {
     var p1;
     var p2;
     var frame = 0;
+    var delay = 3;
 
     function preload() { }
 
@@ -182,9 +184,9 @@ function run() {
 	    };
 
 	    // scheduling input on both sides
-	    p1Queue[frame + 2] = frameInput;
+	    p1Queue[frame + delay] = { input: frameInput, };
 	    // just sending the objects is inefficient but the sent data is absolutely tiny
-	    conn.send({ type: "update", input: frameInput, state: frameState, schedFrame: frame + 2, });
+	    conn.send({ type: "update", input: frameInput, state: frameState, schedFrame: frame + delay, });
 
 	    if(p1.y > 600) {
 		if(host) {
@@ -215,11 +217,11 @@ function run() {
 	    var xMax = 750;
 	    var yMax = 1000;
 	    if(typeof p1Queue[frame] !== "undefined" && typeof p2Queue[frame] !== "undefined") {  
-		//fixState(p2Queue[0].state);
+		fixState(p2Queue[frame].state);
 		//console.log(`p2Queue length: ${p2Queue.length}`);
 
-		var p1Input = p1Queue[frame];
-		var p2Input = p2Queue[frame];
+		var p1Input = p1Queue[frame].input;
+		var p2Input = p2Queue[frame].input;
 		
 		if(p1Input.left && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
 		else if(p1Input.right && p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
@@ -231,8 +233,8 @@ function run() {
 		else p2.body.setAccelerationX(0);
 		if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
 
-		p1Queue = p1Queue.splice(frame, 1);
-		p2Queue = p2Queue.splice(frame, 1);		
+		p1Queue = p1Queue.splice(frame - 3, 1);
+		p2Queue = p2Queue.splice(frame - 3, 1);		
 	    } else {
 		// ran out of input
 	    }

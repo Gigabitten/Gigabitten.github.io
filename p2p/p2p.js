@@ -57,13 +57,32 @@ user.on("connection", (recievedConn) => {
     begin();
 });
 
-function coordinateTime() {
-    
-}
+var p2Queue = new Array();
+var t0;
+var syncTo;
+var timeRecieved = false;
+var secTime;
+var timeSet = false;
+
+var ready = false;
 
 function begin() {
+    conn.on("data", (data) => {
+	console.log(data.type);
+	// string comparison is slightly slow, I know, but this is *very* easy to read
+	if(data.type === "timeSetup" && !ready) {
+	    t0 = data.time;
+	    ready = true;
+	}
+	if(data.type === "timeSync") {
+	    syncTo = data.time;
+	    timeRecieved = true;
+	}
+	if(data.type === "update") {
+	    p2Queue.push(data);
+	}
+    });        
     app.innerHTML = "";
-    coordinateTime();
     run();
 }
 
@@ -91,19 +110,12 @@ function run() {
     var cursors;
     var p1;
     var p2;
-    var p2Queue = new Array();
     var frame = 0;
-    var t0;
-    var syncTo;
-    var timeRecieved = false;
-    var secTime;
-    var timeSet = false;
-    
 
     function preload() { }
 
     function create() {
-	var floor = this.add.rectangle(400, 550, 500, 100, 0xeeeeee);
+	var floor = this.add.rectangle(400, 550, 500, 100, 0x888888);
 	this.physics.add.existing(floor, true);
 	
 	p1 = this.add.circle(150, 100, 20, 0x00ff00);
@@ -119,27 +131,11 @@ function run() {
 	cursors = this.input.keyboard.createCursorKeys();
 
 	if(host) {
-	    t0 = Date.now() + 2000;
-	    conn.send({ type: "timeSetup", t0: t0, });
 	} else {
 	    var temp = p1;
 	    p1 = p2;
-	    p2 = temp;	    
+	    p2 = temp;
 	}
-	
-	conn.on("data", (data) => {
-	    // string comparison is slightly slow, I know, but this is *very* easy to read
-	    if(data.type === "timeSetup") {
-		t0 = data.t0;
-	    }
-	    if(data.type === "timeSync") {
-		syncTo = data.time;
-		timeRecieved = true;
-	    }
-	    if(data.type === "update") {
-		p2Queue.push(data);
-	    }
-	});
     }
 
     function fixState(state) {
@@ -149,112 +145,120 @@ function run() {
 	p2.body.setVelocityY(state.yv);
     }
 
+    function sleep(duration) {
+	let t = Date.now();
+	let i = 0;
+	while(Date.now() < t + duration) { i++; }
+	console.log(`Slept for ${i} loops`);
+    }
+    
     function update() {
-	// waiting for the agreed-upon time
-	while(Date.now() < t0) { };
+	if(!ready) conn.send({ type: "timeSetup", time: Date.now() + 2000, });
+	if(ready) {
+	    // waiting for the agreed-upon time
+	    while(Date.now() < t0) { };
 
-	if(frame % 60 === 0) {
-	    conn.send({ type: "timeSync", time: Date.now(), });
-	    secTime = Date.now();
-	    timeSet = true;
-	}
-	if(timeSet && timeRecieved) {
-	    timeSet = false;
-	    timeRecieved = false;
-	    let t = Date.now();
-	    while(Date.now() < t + (syncTo - secTime)) { }
-	}
-	
-	frame++;
-	var frameInput = {
-	    left: cursors.left.isDown,
-	    right: cursors.right.isDown,
-	    up: cursors.up.isDown
-	};
-	var frameState = {
-	    x: p1.x,
-	    y: p1.y,
-	    xv: p1.body.velocity.x,
-	    yv: p1.body.velocity.y,
-	};
-	
-	// just sending the objects is inefficient but the sent data is absolutely tiny
-	conn.send({ type: "update", input: frameInput, state: frameState, });
-
-	if(p2Queue.length < 2 && frame > 100) console.log("Ran out of input from remote player");
-	
-	if(p1.y > 600) {
-	    if(host) {
-		p1.x = 150;
-		p1.y = 100;
-	    } else {
-		p1.x = 650;
-		p1.y = 100;
+	    if(frame % 60 === 0) {
+		conn.send({ type: "timeSync", time: Date.now(), });
+		secTime = Date.now();
+		timeSet = true;
 	    }
-	    p1.body.setVelocityX(0);
-	    p1.body.setVelocityY(0);	    
-	}
-	if(p2.y > 600) {
-	    if(host) {
-		p2.x = 650;
-		p2.y = 100;
-	    } else {
-		p2.x = 150;
-		p2.y = 100;
+	    if(timeSet && timeRecieved) {
+		timeSet = false;
+		timeRecieved = false;
+		sleep(syncTo - secTime);
 	    }
-	    p2.body.setVelocityX(0);
-	    p2.body.setVelocityY(0);
-	}
-	
-	if(p1.body.touching.down) p1.body.setVelocityX(p1.body.velocity.x * 0.99);
-	if(p2.body.touching.down) p2.body.setVelocityX(p2.body.velocity.x * 0.99);
-
-	var xMax = 750;
-	var yMax = 1000;
-	if(p2Queue.length > 2) {
-	    fixState(p2Queue[0].state);
-	    console.log(`p2Queue length: ${p2Queue.length}`);
-	    if(frames % 60 === 0) console.log(`Seconds passed: ${Math.floor(frames / 60)}`);
-
-	    if(cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
-	    else if(cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
-	    else p1.body.setAccelerationX(0);
-	    if(cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
-
-	    var p2Input = p2Queue[0].input;
-	    if(p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
-	    else if(p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
-	    else p2.body.setAccelerationX(0);
-	    if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
-
-	    p2Queue.shift();
-	}
-
-	// custom collision checking because the basic check is weird with shapes and it's easyish
-	var xDist = p1.x - p2.x;
-	var yDist = p1.y - p2.y;
-	var dist = Math.sqrt(xDist * xDist + yDist * yDist);
-	var outerDist = dist - p1.width - p2.width;
-	if(outerDist < 0) {
-	    // static collision resolution
-	    p1.x -= (outerDist / 2) * (p1.x - p2.x) / dist;
-	    p1.y -= (outerDist / 2) * (p1.y - p2.y) / dist;
-	    p2.x += (outerDist / 2) * (p1.x - p2.x) / dist;
-	    p2.y += (outerDist / 2) * (p1.y - p2.y) / dist;
-
-	    // dynamic collision resolution - formula off of wikipedia page for elastic collisions
-	    var nx = xDist / dist;
-	    var ny = yDist / dist;
-
-	    var kx = p1.body.velocity.x - p2.body.velocity.x;
-	    var ky = p1.body.velocity.y - p2.body.velocity.y;
 	    
-	    var p = nx * kx + ny * ky;
+	    frame++;
+	    var frameInput = {
+		left: cursors.left.isDown,
+		right: cursors.right.isDown,
+		up: cursors.up.isDown
+	    };
+	    var frameState = {
+		x: p1.x,
+		y: p1.y,
+		xv: p1.body.velocity.x,
+		yv: p1.body.velocity.y,
+	    };
 	    
-	    p1.body.setVelocityX(p1.body.velocity.x - p * nx);
-	    p1.body.setVelocityY(p1.body.velocity.y - p * ny);
-	    p2.body.setVelocityX(p2.body.velocity.x + p * nx);
-	    p2.body.setVelocityY(p2.body.velocity.y + p * ny);
+	    // just sending the objects is inefficient but the sent data is absolutely tiny
+	    conn.send({ type: "update", input: frameInput, state: frameState, });
+
+	    if(p2Queue.length < 2 && frame > 100) console.log("Ran out of input from remote player");
+	    
+	    if(p1.y > 600) {
+		if(host) {
+		    p1.x = 150;
+		    p1.y = 100;
+		} else {
+		    p1.x = 650;
+		    p1.y = 100;
+		}
+		p1.body.setVelocityX(0);
+		p1.body.setVelocityY(0);	    
+	    }
+	    if(p2.y > 600) {
+		if(host) {
+		    p2.x = 650;
+		    p2.y = 100;
+		} else {
+		    p2.x = 150;
+		    p2.y = 100;
+		}
+		p2.body.setVelocityX(0);
+		p2.body.setVelocityY(0);
+	    }
+	    
+	    if(p1.body.touching.down) p1.body.setVelocityX(p1.body.velocity.x * 0.99);
+	    if(p2.body.touching.down) p2.body.setVelocityX(p2.body.velocity.x * 0.99);
+
+	    var xMax = 750;
+	    var yMax = 1000;
+	    if(p2Queue.length > 2) {
+		fixState(p2Queue[0].state);
+		//console.log(`p2Queue length: ${p2Queue.length}`);
+
+		if(cursors.left.isDown && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
+		else if(cursors.right.isDown&& p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
+		else p1.body.setAccelerationX(0);
+		if(cursors.up.isDown && p1.body.touching.down) p1.body.setVelocityY(-1000);
+
+		var p2Input = p2Queue[0].input;
+		if(p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
+		else if(p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
+		else p2.body.setAccelerationX(0);
+		if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
+
+		p2Queue.shift();
+	    }
+
+	    // custom collision checking because the basic check is weird with shapes and it's easyish
+	    var xDist = p1.x - p2.x;
+	    var yDist = p1.y - p2.y;
+	    var dist = Math.sqrt(xDist * xDist + yDist * yDist);
+	    var outerDist = dist - p1.width - p2.width;
+	    if(outerDist < 0) {
+		// static collision resolution
+		p1.x -= (outerDist / 2) * (p1.x - p2.x) / dist;
+		p1.y -= (outerDist / 2) * (p1.y - p2.y) / dist;
+		p2.x += (outerDist / 2) * (p1.x - p2.x) / dist;
+		p2.y += (outerDist / 2) * (p1.y - p2.y) / dist;
+
+		// dynamic collision resolution - formula off of wikipedia page for elastic collisions
+		var nx = xDist / dist;
+		var ny = yDist / dist;
+
+		var kx = p1.body.velocity.x - p2.body.velocity.x;
+		var ky = p1.body.velocity.y - p2.body.velocity.y;
+		
+		var p = nx * kx + ny * ky;
+		
+		p1.body.setVelocityX(p1.body.velocity.x - p * nx);
+		p1.body.setVelocityY(p1.body.velocity.y - p * ny);
+		p2.body.setVelocityX(p2.body.velocity.x + p * nx);
+		p2.body.setVelocityY(p2.body.velocity.y + p * ny);
+	    }
 	}
     }
 }

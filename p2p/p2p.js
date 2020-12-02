@@ -192,13 +192,13 @@ function run() {
 	};
 
 	p1 = {
-	    x: 150,
+	    x: 250,
 	    y: 100,
 	    vx: 0,
 	    vy: 0,
 	    ax: 0,
 	    ay: gravity,
-	    xSpawn: 150,
+	    xSpawn: 250,
 	    ySpawn: 100,
 	    radius: 20,
 	    color: "#00ff00",
@@ -207,13 +207,13 @@ function run() {
 	    draw: drawCircle,
 	};
 	p2 = {
-	    x: 650,
+	    x: 550,
 	    y: 100,
 	    vx: 0,
 	    vy: 0,
 	    ax: 0,
 	    ay: gravity,
-	    xSpawn: 650,
+	    xSpawn: 550,
 	    ySpawn: 100,
 	    radius: 20,
 	    color: "#ff0000",

@@ -19,7 +19,9 @@ function randomHexString(length) {
 var host;
 
 function connect() {
-    conn = user.connect(document.getElementById("idBox").value, { reliable: true, });
+    conn = user.connect(document.getElementById("idBox").value, {
+	reliable: true,
+    });
     host = true;
     begin();
 };
@@ -33,16 +35,18 @@ function checkEnter(e, f) {
 user.on("open", (id) => {
     let idText = "Your ID: " + id;
     peerIdSpace.innerHTML = idText;
-    // there are better ways to do this, but none that indent correctly in my editor that I know of
+    // there are better ways to do this, but none that
+    // indent correctly in my editor that I know of
     inputId.innerHTML = [
 	'Input an ID:',
-    	'<div class="input-group mb-3">',
+	'<div class="input-group mb-3">',
 	'<div class="input-group-prepend" id="messages">',
-	'<button  type="button" class="btn btn-secondary" id="connectBtn">Connect</button>',
-	'</div>',	
+	'<button  type="button" class="btn btn-secondary" id="connectBtn">',
+	'Connect</button>',
+	'</div>',
 	'<input type="text" class="form-control" id="idBox" ',
 	'placeholder="Enter a friend\'s ID to connect!">',
-	'</div>',	
+	'</div>',
 	'Alternatively, wait for a connection!',
     ].join("");
     document.getElementById("idBox").addEventListener("keypress", (event) => {
@@ -57,20 +61,21 @@ user.on("connection", (recievedConn) => {
     begin();
 });
 
-var p1Queue = new Array();
-var p2Queue = new Array();
-var p2State = new Array();
 var t0;
 var syncTo;
 var timeRecieved = false;
 var secTime;
 var timeSet = false;
+var p1;
+var p2;
+var gravity = 1.3;
 
 var ready = false;
 
 function begin() {
     conn.on("data", (data) => {
-	// string comparison is slightly slow, I know, but this is *very* easy to read
+	// string comparison is slightly slow, I know,
+	// but this is *very* easy to read
 	if(data.type === "timeSetup" && !ready) {
 	    t0 = data.time;
 	    ready = true;
@@ -80,59 +85,107 @@ function begin() {
 	    timeRecieved = true;
 	}
 	if(data.type === "update") {
-	    p2Queue[data.schedFrame] = data;
+	    p2.inputQueue[data.schedFrame] = data;
 	}
-    });        
+    });
     app.innerHTML = "";
     run();
 }
 
 function run() {
-    var config = {
-	type: Phaser.AUTO,
-	width: 800,
-	height: 600,
-	transparent: true,
-	physics: {
-	    default: 'arcade',
-	    arcade: {
-		gravity: { y: 2000 },
-		debug: false,
-	    }
-	},
-	scene: {
-	    preload: preload,
-	    create: create,
-	    update: update,
-	}
-    };
+    var scene = new Array();
 
-    var game = new Phaser.Game(config);
-    var cursors;
-    var p1;
-    var p2;
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext('2d');
+    var width = canvas.width;
+    var height = canvas.height;
+
+    create();
+
+    window.requestAnimationFrame(gameLoop);
+
     var frame = 0;
     var delay = 3;
+    var leftPressed = false;
+    var rightPressed = false;
+    var upPressed = false;
 
-    function preload() { }
+    window.addEventListener("keydown", handleInput);
+    window.addEventListener("keyup", handleInput);
+
+    // handleInput was more or less written by Addie Meders,
+    // in a previous project we did together
+    function handleInput(e) {
+	var key_state = e.type == "keydown";
+	switch(e.keyCode) {
+	case 65: //A Key
+	case 37: //Left Key
+	    leftPressed = key_state;
+	    break;
+
+	case 87: //W Key
+	case 38: //Up Key
+	case 32: // spacebar
+	    upPressed = key_state;
+	    break;
+
+	case 68: //D Key
+	case 39: //Right Key
+	    rightPressed = key_state;
+	    break;
+	}
+    }
+
+    function drawCircle(obj) {
+	ctx.fillStyle = obj.color;
+	ctx.beginPath();
+	ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+	ctx.fill();
+    }
 
     function create() {
-	var floor = this.add.rectangle(400, 550, 500, 100, 0x888888);
-	this.physics.add.existing(floor, true);
-	
-	p1 = this.add.circle(150, 100, 20, 0x00ff00);
-	this.physics.add.existing(p1);
-	p1.body.setBounce(0.2);
-	p2 = this.add.circle(650, 100, 20, 0xff0000);
-	this.physics.add.existing(p2);
-	p2.body.setBounce(0.2);
-	
-	this.physics.add.collider(floor, p1);
-	this.physics.add.collider(floor, p2);
+	var floor = {
+	    draw: function(obj) {
+		ctx.fillStyle = "#888888";
+		ctx.fillRect(150, 500, 500, 100);
+	    },
+	};
 
-	cursors = this.input.keyboard.createCursorKeys();
+	p1 = {
+	    x: 150,
+	    y: 100,
+	    vx: 0,
+	    vy: 0,
+	    ax: 0,
+	    ay: gravity,
+	    xSpawn: 150,
+	    ySpawn: 100,
+	    radius: 20,
+	    color: "#00ff00",
+	    inputQueue: new Array(),
+	    stateQueue: new Array(),
+	    draw: drawCircle,
+	};
+	p2 = {
+	    x: 650,
+	    y: 100,
+	    vx: 0,
+	    vy: 0,
+	    ax: 0,
+	    ay: gravity,
+	    xSpawn: 650,
+	    ySpawn: 100,
+	    radius: 20,
+	    color: "#ff0000",
+	    inputQueue: new Array(),
+	    stateQueue: new Array(),	    
+	    draw: drawCircle,
+	};
+
+	scene = [floor, p1, p2];
 
 	if(host) {
+	    // nothing here right now
 	} else {
 	    var temp = p1;
 	    p1 = p2;
@@ -140,11 +193,65 @@ function run() {
 	}
     }
 
+    function floorCheck(obj) {
+	if(150 <= obj.x && obj.x <= 650 && obj.y + obj.radius >= 500) {
+	    obj.vy = 0;
+	    obj.y = 500 - obj.radius;
+	    obj.onFloor = true;
+	}
+    }
+
+    function collide() {
+	[p1,p2].map(o => floorCheck(o));
+
+	// custom collision checking because the basic
+	// check is weird with shapes and it's easyish
+	var xDist = p1.x - p2.x;
+	var yDist = p1.y - p2.y;
+	var dist = Math.sqrt(xDist * xDist + yDist * yDist);
+	var outerDist = dist - p1.radius - p2.radius;
+	if(outerDist < 0) {
+	    // static collision resolution
+	    p1.x -= (outerDist / 2) * (p1.x - p2.x) / dist;
+	    p1.y -= (outerDist / 2) * (p1.y - p2.y) / dist;
+	    p2.x += (outerDist / 2) * (p1.x - p2.x) / dist;
+	    p2.y += (outerDist / 2) * (p1.y - p2.y) / dist;
+
+	    // dynamic collision resolution - formula off of
+	    // wikipedia page for elastic collisions
+	    var nx = xDist / dist;
+	    var ny = yDist / dist;
+
+	    var kx = p1.vx - p2.vx;
+	    var ky = p1.vy - p2.vy;
+
+	    var p = nx * kx + ny * ky;
+
+	    p1.vx -= p * nx;
+	    p1.vy -= p * ny;
+	    p2.vx += p * nx;
+	    p2.vy += p * ny;
+	}
+    }
+
     function fixState(state) {
 	p2.x = state.x;
 	p2.y = state.y;
-	p2.body.setVelocityX(state.xv);
-	p2.body.setVelocityY(state.yv);
+	p2.vx = state.vx;
+	p2.vy = state.vy;
+    }
+
+    function getState(p, frame) {
+	if(arguments.length === 1) {
+	    return {
+		x: p.x,
+		y: p.y,
+		vx: p.vx,
+		vy: p.vy,
+		onFloor: p.onFloor,
+	    };
+	}
+	return p.stateQueue[frame];
     }
 
     function sleep(duration) {
@@ -152,154 +259,100 @@ function run() {
 	let i = 0;
 	while(Date.now() < t + duration) { i++; }
     }
-    
-    function update() {
-	if(!ready) conn.send({ type: "timeSetup", time: Date.now() + 2000, });
-	if(ready) {
-	    // waiting for the agreed-upon time
-	    while(Date.now() < t0) { };
 
-	    if(frame % 60 === 0) {
-		conn.send({ type: "timeSync", time: Date.now(), });
-		secTime = Date.now();
-		timeSet = true;
-	    }
-	    if(timeSet && timeRecieved) {
-		timeSet = false;
-		timeRecieved = false;
-		sleep(syncTo - secTime);
-	    }
-	    
-	    frame++;
-	    var frameInput = {
-		left: cursors.left.isDown,
-		right: cursors.right.isDown,
-		up: cursors.up.isDown
-	    };
-	    var frameState = {
-		x: p1.x,
-		y: p1.y,
-		xv: p1.body.velocity.x,
-		yv: p1.body.velocity.y,
-	    };
+    function doPhysics(obj) {
+	obj.x += obj.vx;
+	obj.y += obj.vy;
+	obj.vx += obj.ax;
+	obj.vy += obj.ay;
 
-	    // scheduling input on both sides
-	    p1Queue[frame + delay] = { input: frameInput, };
-	    // just sending the objects is inefficient but the sent data is absolutely tiny
-	    conn.send({ type: "update", input: frameInput, state: frameState, schedFrame: frame + delay, });
+	if(obj.y > 600) {
+	    obj.vx = 0;
+	    obj.vy = 0;
+	    obj.x = obj.xSpawn;
+	    obj.y = obj.ySpawn;
+	}
 
-	    if(p1.y > 600) {
-		if(host) {
-		    p1.x = 150;
-		    p1.y = 100;
-		} else {
-		    p1.x = 650;
-		    p1.y = 100;
-		}
-		p1.body.setVelocityX(0);
-		p1.body.setVelocityY(0);	    
-	    }
-	    if(p2.y > 600) {
-		if(host) {
-		    p2.x = 650;
-		    p2.y = 100;
-		} else {
-		    p2.x = 150;
-		    p2.y = 100;
-		}
-		p2.body.setVelocityX(0);
-		p2.body.setVelocityY(0);
-	    }
-	    
-	    if(p1.body.touching.down) p1.body.setVelocityX(p1.body.velocity.x * 0.99);
-	    if(p2.body.touching.down) p2.body.setVelocityX(p2.body.velocity.x * 0.99);
+	if(obj.onFloor) obj.vx *= 0.97;
+    }
 
-	    var xMax = 750;
-	    var yMax = 1000;
-	    if(typeof p1Queue[frame] !== "undefined" && typeof p2Queue[frame] !== "undefined") {  
-		fixState(p2Queue[frame].state);
-		//console.log(`p2Queue length: ${p2Queue.length}`);
+    function render() {
+	ctx.clearRect(0, 0, width, height);
+	scene.map(obj => {
+	    obj.draw(obj);
+	});
+    }
 
-		var p1Input = p1Queue[frame].input;
-		var p2Input = p2Queue[frame].input;
-		
-		if(p1Input.left && p1.body.velocity.x < xMax) p1.body.setAccelerationX(-1000);
-		else if(p1Input.right && p1.body.velocity.y < yMax) p1.body.setAccelerationX(1000);
-		else p1.body.setAccelerationX(0);
-		if(p1Input.up && p1.body.touching.down) p1.body.setVelocityY(-1000);
+    function sync() {
+	// waiting for the agreed-upon time
+	while(Date.now() < t0) { };
 
-		if(p2Input.left && p2.body.velocity.x < xMax) p2.body.setAccelerationX(-1000);
-		else if(p2Input.right && p2.body.velocity.y < yMax) p2.body.setAccelerationX(1000);
-		else p2.body.setAccelerationX(0);
-		if(p2Input.up && p2.body.touching.down) p2.body.setVelocityY(-1000);
-
-		p1Queue = p1Queue.splice(frame - 3, 1);
-		p2Queue = p2Queue.splice(frame - 3, 1);		
-	    } else {
-		// ran out of input
-	    }
-
-	    // custom collision checking because the basic check is weird with shapes and it's easyish
-	    var xDist = p1.x - p2.x;
-	    var yDist = p1.y - p2.y;
-	    var dist = Math.sqrt(xDist * xDist + yDist * yDist);
-	    var outerDist = dist - p1.width - p2.width;
-	    if(outerDist < 0) {
-		// static collision resolution
-		p1.x -= (outerDist / 2) * (p1.x - p2.x) / dist;
-		p1.y -= (outerDist / 2) * (p1.y - p2.y) / dist;
-		p2.x += (outerDist / 2) * (p1.x - p2.x) / dist;
-		p2.y += (outerDist / 2) * (p1.y - p2.y) / dist;
-
-		// dynamic collision resolution - formula off of wikipedia page for elastic collisions
-		var nx = xDist / dist;
-		var ny = yDist / dist;
-
-		var kx = p1.body.velocity.x - p2.body.velocity.x;
-		var ky = p1.body.velocity.y - p2.body.velocity.y;
-		
-		var p = nx * kx + ny * ky;
-		
-		p1.body.setVelocityX(p1.body.velocity.x - p * nx);
-		p1.body.setVelocityY(p1.body.velocity.y - p * ny);
-		p2.body.setVelocityX(p2.body.velocity.x + p * nx);
-		p2.body.setVelocityY(p2.body.velocity.y + p * ny);
-	    }
+	if(frame % 60 === 0) {
+	    conn.send({ type: "timeSync", time: Date.now(), });
+	    secTime = Date.now();
+	    timeSet = true;
+	}
+	if(timeSet && timeRecieved) {
+	    timeSet = false;
+	    timeRecieved = false;
+	    sleep(syncTo - secTime);
 	}
     }
-}
 
-// The following section of code was mostly for my own sake, to make sure I understand
-/*
-function addMsg(msg) {
-    let messages = document.getElementById("messages");
-    messages.innerHTML = messages.innerHTML + '<br>\u2003\u2003\u2003\u2003\u00A0\u00A0\u00A0' + msg;
-}
+    function setFrame() {
+	var frameInput = {
+	    left: leftPressed,
+	    right: rightPressed,
+	    up: upPressed,
+	};
+	var frameState = getState(p1, frame);
+	// scheduling input on both sides
+	p1.inputQueue[frame + delay] = { input: frameInput, };
+	// just sending the objects is inefficient
+	// but the sent data is currently absolutely tiny
+	conn.send({
+	    type: "update",
+	    input: frameInput,
+	    state: frameState,
+	    schedFrame: frame + delay,
+	});
+    }
 
-function sendMsg() {
-    let messageBox = document.getElementById("messageBox");
-    conn.send(messageBox.value);
-    addMsg(messageBox.value);
-    messageBox.value = "";
-}
+    function processInput(p) {
+	var xMavx = 10;
+	var yMavx = 10;
+	var input = p.inputQueue[frame].input;
 
-function begin() {
-    app.innerHTML = [
-	'<div class="fixed-bottom">',
-	'<div id="messages"></div>',
-	'<div class="input-group mb-3">',
-	'<div class="input-group-prepend">',	
-	'<button type="button" class="btn btn-secondary" onclick="sendMsg()">Send</button>',
-	'</div>',	
-	'<input type="text" class="form-control" id="messageBox" placeholder="Send a message">',
-	'</div>',
-	'</div>',	
-    ].join("");
-    document.getElementById("messageBox").addEventListener("keypress", (event) => {
-	checkEnter(event, sendMsg);
-    });    
-    conn.on("data", (data) => {
-	addMsg(data);
-    });
+	if(input.left && p.vx < xMavx) p.ax = -0.5;
+	else if(input.right && p.vy < yMavx) p.ax = 0.5;
+	else p.ax = 0;
+	if(input.up && p.onFloor) {
+	    p.vy = -20;
+	    p.onFloor = false;
+	}
+
+	p.inputQueue = p.inputQueue.splice(frame - 3, 1);
+    }
+
+    function update() {
+	frame++;
+	[p1,p2].map(p => doPhysics(p));
+	collide();
+	render();
+	if(typeof p1.inputQueue[frame] !== "undefined" &&
+	   typeof p2.inputQueue[frame] !== "undefined") {
+	    fixState(p2.inputQueue[frame].state);
+	    [p1,p2].map(p => processInput(p));
+	}
+    }
+
+    function gameLoop() {
+	if(!ready) conn.send({ type: "timeSetup", time: Date.now() + 2000, });
+	if(ready) {
+	    update();
+	    sync();
+	    setFrame();
+	}
+	window.requestAnimationFrame(gameLoop);
+    }
 }
-*/

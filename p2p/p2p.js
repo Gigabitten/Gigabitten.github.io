@@ -69,7 +69,6 @@ var ready = false;
 
 function begin() {
     conn.on("data", (data) => {
-	console.log(data.type);
 	// string comparison is slightly slow, I know, but this is *very* easy to read
 	if(data.type === "timeSetup" && !ready) {
 	    t0 = data.time;
@@ -150,7 +149,6 @@ function run() {
 	let t = Date.now();
 	let i = 0;
 	while(Date.now() < t + duration) { i++; }
-	console.log(`Slept for ${i} loops`);
     }
     
     function update() {
@@ -236,7 +234,7 @@ function run() {
 		p1Queue = p1Queue.splice(frame, 1);
 		p2Queue = p2Queue.splice(frame, 1);		
 	    } else {
-		console.log("Ran out of input somehow!");
+		// ran out of input
 	    }
 
 	    // custom collision checking because the basic check is weird with shapes and it's easyish
